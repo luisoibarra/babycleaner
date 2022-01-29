@@ -25,7 +25,10 @@ source-repository head
 
 library
   exposed-modules:
+      Agent
+      Environment
       Lib
+      Utils
   other-modules:
       Paths_babycleaner
   hs-source-dirs:
