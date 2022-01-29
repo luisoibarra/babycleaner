@@ -26,8 +26,9 @@ source-repository head
 library
   exposed-modules:
       Agent
+      AgentEnv
       Environment
-      Lib
+      RandomUtils
       Utils
   other-modules:
       Paths_babycleaner
