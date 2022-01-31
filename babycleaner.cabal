@@ -45,6 +45,7 @@ library
 executable babycleaner-exe
   main-is: Main.hs
   other-modules:
+      InitialStates
       Paths_babycleaner
   hs-source-dirs:
       app

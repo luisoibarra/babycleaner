@@ -3,6 +3,7 @@ import Agent
 import Utils
 import System.Random
 import Text.Printf
+import RandomUtils
 
 data Env s = Env {
     height :: Int,
@@ -15,19 +16,20 @@ data Env s = Env {
 
 instance Show (Env s) where {
   show env = let Env {
-      height=_height, 
-      width=_width, 
-      randGen=_randGen, 
-      currentTurn=_currentTurn, 
-      shuffleTurnAmount=_shuffleTurnAmount, 
+      height=_height,
+      width=_width,
+      randGen=_randGen,
+      currentTurn=_currentTurn,
+      shuffleTurnAmount=_shuffleTurnAmount,
       agents=_agents
-    } = env 
+    } = env
     in
         printf "Dimensions (%d, %d)\nTurn %d\nShuffle %d\n\n%s" _height _width _currentTurn _shuffleTurnAmount (showBoard _height _width _agents)
 }
 
 getEnvTurn env = let Env { currentTurn = turn } = env in turn
 getEnvAgents env = let Env { agents = agents } = env in agents
+getEnvGen env = let Env { randGen = gen } = env in gen
 
 isValidEnv env =
     let
@@ -48,10 +50,12 @@ isValidEnv env =
         -- Valid Playpen
         connectedNodes (map getAgentPos playpens) &&
         -- Cells Valid
-        all (\x -> validCell (samePositionCells x agents getAgentPos)) agents
+        all (\x -> validCell (samePositionCells x agents getAgentPos)) agents &&
+        -- Valid Positions
+        all (validEnvPosition env . getAgentPos) agents
 
-validCell [] = True 
-validCell agents = 
+validCell [] = True
+validCell agents =
     let
         babies = filter (agentTypeIs Baby) agents
         obstacles = filter (agentTypeIs Obstacle) agents
@@ -62,26 +66,94 @@ validCell agents =
         -- Zero or one instance for any AgentType in one position 
         all (\x -> length x <= 1) [babies, obstacles, playpens, robots, dirts] &&
         -- A baby and a playpen can be in the same position
-        length (babies ++ playpens) <= 2 && 
+        length (babies ++ playpens) <= 2 &&
         -- A baby and a robot can be in the same position
-        length (babies ++ robots) <= 2 
+        length (babies ++ robots) <= 2
 
-addOneToTurnEnv env = 
+-- Returns if pos is a valid position in env
+validEnvPosition env pos =
+    let
+        Env {height=_height, width=_width} = env
+    in
+        validPosition _height _width pos
+
+-- Returns if pos is a valid position in a height X width matrix  
+validPosition height width (posX, posY) = posX >= 0 && posY >= 0 && posX < width && posY < height
+
+-- Returns all valid pos's neighboring positions in a height X width matrix
+validNeighborsPosition height width pos = filter (validPosition height width) (positionsNextTo pos)
+
+-- Returns a agent list grouped by position  
+neighborsAgents env pos = 
+    let
+        neighborsPos = filter (validEnvPosition env) (positionsNextTo pos)
+    in
+        filter (validEnvPosition env . fst) [ (neighPos, getEnvPositionAgent env neighPos) | neighPos <- neighborsPos ]
+
+
+-- Returns all agents in given position
+getEnvPositionAgent env pos = filter (\a -> getAgentPos a == pos) $ getEnvAgents env
+
+
+addOneToTurnEnv env =
     let
         Env {
-            height=_height, 
-            width=_width, 
+            height=_height,
+            width=_width,
             randGen = _randGen,
-            currentTurn=_currentTurn, 
-            shuffleTurnAmount=_shuffleTurnAmount, 
+            currentTurn=_currentTurn,
+            shuffleTurnAmount=_shuffleTurnAmount,
             agents=_agents
         } = env
-    in 
+    in
         Env {
-            height=_height, 
-            width=_width, 
+            height=_height,
+            width=_width,
             randGen = _randGen,
-            currentTurn=_currentTurn + 1, 
-            shuffleTurnAmount=_shuffleTurnAmount, 
+            currentTurn=_currentTurn + 1,
+            shuffleTurnAmount=_shuffleTurnAmount,
             agents=_agents
         }
+
+pickRandomFromListEnv env pickList = 
+    let
+        Env {
+                height=_height, 
+                width=_width, 
+                randGen=_randGen, 
+                currentTurn=_currentTurn, 
+                shuffleTurnAmount=_shuffleTurnAmount, 
+                agents=_agents
+            } = env
+        (element, nextGen) = pickRandomFromList pickList _randGen
+        nextEnv = Env {
+                height=_height, 
+                width=_width, 
+                randGen=nextGen, 
+                currentTurn=_currentTurn, 
+                shuffleTurnAmount=_shuffleTurnAmount, 
+                agents=_agents
+            }
+    in
+        (element, nextEnv)
+
+updateAgentEnv env oldAgent newAgent = 
+    let
+        Env {
+                height=_height, 
+                width=_width, 
+                randGen=_randGen, 
+                currentTurn=_currentTurn, 
+                shuffleTurnAmount=_shuffleTurnAmount,
+                agents=_agents
+            } = env
+        newAgents = newAgent:[a | a <- _agents, getAgentId a /= getAgentId oldAgent]
+    in
+        Env {
+                height=_height,
+                width=_width, 
+                randGen=_randGen, 
+                currentTurn=_currentTurn, 
+                shuffleTurnAmount=_shuffleTurnAmount, 
+                agents=newAgents
+            }

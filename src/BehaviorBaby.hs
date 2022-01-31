@@ -17,6 +17,14 @@ inPlaypen = inAgentType Playpen
 
 -- Apply Action to Env --
 
-applyMoveBabyActionToEnv env action = env -- TODO
+applyMoveBabyActionToEnv env action =
+    let
+        agent = getAgentFromAction action
+        possibleMovePositions = getAllMoveablePositions env [Obstacle, Baby] agent
+        (movePos, nextRandEnv) = pickRandomFromListEnv env possibleMovePositions
+    in  if null possibleMovePositions then
+            env
+        else
+            moveAgent nextRandEnv agent movePos
 
 applyCreateDirtBabyActionToEnv env action = env -- TODO

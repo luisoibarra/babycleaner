@@ -7,6 +7,7 @@ import Utils
 import AgentEnv
 import RandomUtils
 import Debug.Trace
+import InitialStates
 
 -- Simulation Initial State --
 
@@ -18,66 +19,8 @@ randomSeed = 10
 initialGen = initRandomGen randomSeed
 
 -- Simulation's initial state  -- TODO Create a random initial env generator
-initState = Env {
-    height = 5,
-    width = 5,
-    randGen = initialGen,
-    currentTurn = 0,
-    shuffleTurnAmount = 10,
-    agents = [
-        Agent {
-            agentId = 0,
-            posX = 0,
-            posY = 0,
-            agentType = Robot,
-            state = RobotState {
-                holdingAgents = []
-            }
-        },
-        Agent {
-            agentId = 1,
-            posX = 2,
-            posY = 0,
-            agentType = Dirt,
-            state = EmptyState
-        },
-        Agent {
-            agentId = 2,
-            posX = 2,
-            posY = 2,
-            agentType = Baby,
-            state = EmptyState
-        },
-        Agent {
-            agentId = 3,
-            posX = 5,
-            posY = 2,
-            agentType = Baby,
-            state = EmptyState
-        },
-        Agent {
-            agentId = 4,
-            posX = 2,
-            posY = 3,
-            agentType = Playpen,
-            state = EmptyState
-        },
-        Agent {
-            agentId = 5,
-            posX = 3,
-            posY = 3,
-            agentType = Playpen,
-            state = EmptyState
-        },
-        Agent {
-            agentId = 6,
-            posX = 4,
-            posY = 2,
-            agentType = Obstacle,
-            state = EmptyState
-        }
-    ]
-}
+-- initState = initState0 initialGen
+initState = initStateBabyTest initialGen
 
 main = do
     putStrLn "Begining simulation"

@@ -14,8 +14,8 @@ randomNum = random
 randomInRange :: (Num a, Random a, RandomGen g) => a -> a -> g -> (a, g)
 randomInRange a b = randomR (a, b)
 
-pickRandomFromList list gen = 
-    let 
-        (index, newGen) = randomInRange 0 (length list) gen
+pickRandomFromList list gen =
+    let
+        (index, newGen) = randomInRange 0 (length list - 1) gen
     in
         (list !! index, newGen)

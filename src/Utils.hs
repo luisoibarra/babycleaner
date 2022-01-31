@@ -5,6 +5,8 @@ module Utils where
 
 dirs = [(0,1),(1,0),(-1,0),(0,-1)]
 
+positionsNextTo (posX, posY) = [ (posX + dX, posY + dY) | (dX, dY) <- dirs ]
+
 nextTo (posX, posY) (posX2, posY2) = any (\(dX, dY) -> posX == posX2 + dX && posY == posY2 + dY) dirs
 
 neighbors (posX, posY) = filter ( `nextTo` (posX, posY))

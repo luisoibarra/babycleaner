@@ -68,6 +68,20 @@ getAgentFromAction PickBaby {agent = _agent} = _agent
 getAgentFromAction LeaveBaby {agent = _agent} = _agent
 getAgentFromAction CreateDirt {agent = _agent} = _agent
 
+changeAgentPos agent (posX, posY) = 
+    let
+        Agent {
+                agentType=_agentType, 
+                agentId=_agentId, 
+                state=_state
+            } = agent
+    in Agent {
+        agentType=_agentType, 
+        posX=posX, 
+        posY=posY, 
+        agentId=_agentId, 
+        state=_state}        
+
 showAgent x y agents =
     let
         positionAgents = filter (\agent -> getAgentPos agent == (x,y)) agents
