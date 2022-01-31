@@ -1,12 +1,15 @@
 module Agent where
 
 
-data AgentType = Obstacle | Playpen | Dirt | Baby | Robot deriving (Eq, Ord)
+data AgentType = Obstacle | Playpen | Dirt | Baby | Robot deriving (Eq, Ord, Show)
+
+type Id = Int
 
 data Agent s = Agent {
     agentType :: AgentType,
     posX :: Int,
     posY :: Int,
+    agentId :: Id,
     state :: s
 } deriving (Eq, Ord)
 
@@ -24,9 +27,9 @@ data Action s =
         agent :: Agent s
     } |
     Move {
-        agent :: Agent s,
-        moveDestPosX :: Integer,
-        moveDestPosY :: Integer
+        agent :: Agent s
+        -- moveDestPosX :: Integer,
+        -- moveDestPosY :: Integer
     } |
     Clean {
         agent :: Agent s
@@ -44,7 +47,9 @@ data Action s =
 data AgentState =
     EmptyState |
     RobotState {
-        holdingBaby :: Bool
+        -- Stores the ids of the agents that the robot is holding, 
+        -- the agents should be in the same position of the robot
+        holdingAgents :: [Id]
     }
 
 agentTypeIs agentType agent = let agentAgentType = getAgentType agent in agentAgentType == agentType
@@ -52,6 +57,9 @@ agentTypeIs agentType agent = let agentAgentType = getAgentType agent in agentAg
 getAgentPos agent = let Agent {posX = posX, posY = posY} = agent in (posX, posY)
 
 getAgentType agent = let Agent {agentType = agentAgentType } = agent in agentAgentType
+
+getAgentState agent = let Agent {state = state } = agent in state
+getAgentId agent = let Agent { agentId = id } = agent in id
 
 getAgentFromAction DoNothing {agent = _agent} = _agent
 getAgentFromAction Move {agent = _agent} = _agent

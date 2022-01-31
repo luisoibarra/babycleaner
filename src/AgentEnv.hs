@@ -2,6 +2,9 @@ module AgentEnv where
 
 import Agent
 import Environment
+import BehaviorUtils
+import BehaviorBaby
+import BehaviorRobot
 
 -- GET AGENT ACTIONS --
 
@@ -19,9 +22,9 @@ getAgentActions env agent =
 
 getDoNothingAction env agent = [DoNothing agent]
 
-getRobotAction env robotAgent = [DoNothing robotAgent] -- TODO
+getRobotAction = brookAgent robotBrookBehavior 
 
-getBabyAction env babyAgent = [DoNothing babyAgent] -- TODO
+getBabyAction = brookAgent babyBrookBehavior
 
 -- APPLY ACTION TO ENV --
 
@@ -36,15 +39,47 @@ getEnvFromAction env action =
 
 applyDoNothingActionToEnv env action = env
 
-applyMoveActionToEnv env action = env -- TODO
+applyMoveActionToEnv env action =
+    let
+        agent = getAgentFromAction action
+        agentType = getAgentType agent
+    in case agentType of
+        Baby -> applyMoveBabyActionToEnv env action
+        Robot -> applyMoveRobotActionToEnv env action
+        _ -> error $ show agentType ++ " can't move"
 
-applyCleanActionToEnv env action = env -- TODO
+applyCleanActionToEnv env action = 
+    let
+        agent = getAgentFromAction action
+        agentType = getAgentType agent
+    in case agentType of
+        Robot -> applyCleanRobotActionToEnv env action
+        _ -> error $ show agentType ++ " can't clean"
 
-applyPickBabyActionToEnv env action = env -- TODO
+applyPickBabyActionToEnv env action =
+    let
+        agent = getAgentFromAction action
+        agentType = getAgentType agent
+    in case agentType of
+        Robot -> applyPickBabyRobotActionToEnv env action
+        _ -> error $ show agentType ++ " can't pick a baby"
 
-applyLeaveBabyActionToEnv env action = env -- TODO
 
-applyCreateDirtActionToEnv env action = env -- TODO
+applyLeaveBabyActionToEnv env action = 
+    let
+        agent = getAgentFromAction action
+        agentType = getAgentType agent
+    in case agentType of
+        Robot -> applyLeaveBabyRobotActionToEnv env action
+        _ -> error $ show agentType ++ " can't leave a baby"
+
+applyCreateDirtActionToEnv env action = 
+    let
+        agent = getAgentFromAction action
+        agentType = getAgentType agent
+    in case agentType of
+        Baby -> applyCreateDirtBabyActionToEnv env action
+        _ -> error $ show agentType ++ " can't pick create dirt"
 
 -- RANDOM ENV CHANGE --
 

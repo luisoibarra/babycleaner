@@ -27,6 +27,7 @@ instance Show (Env s) where {
 }
 
 getEnvTurn env = let Env { currentTurn = turn } = env in turn
+getEnvAgents env = let Env { agents = agents } = env in agents
 
 isValidEnv env =
     let

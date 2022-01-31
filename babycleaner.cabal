@@ -27,6 +27,9 @@ library
   exposed-modules:
       Agent
       AgentEnv
+      BehaviorBaby
+      BehaviorRobot
+      BehaviorUtils
       Environment
       RandomUtils
       Utils
