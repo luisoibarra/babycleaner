@@ -5,43 +5,43 @@ data AgentType = Obstacle | Playpen | Dirt | Baby | Robot deriving (Eq, Ord, Sho
 
 type Id = Int
 
-data Agent s = Agent {
+data Agent = Agent {
     agentType :: AgentType,
     posX :: Int,
     posY :: Int,
     agentId :: Id,
-    state :: s
+    state :: AgentState
 } deriving (Eq, Ord)
 
-instance Show (Agent s) where {
+instance Show Agent where {
   show a = case getAgentType a of
       Obstacle -> "O"
       Playpen -> "P"
       Dirt -> "D"
       Baby -> "B"
-      Robot -> "R"
+      Robot -> "R" ++ if isHoldingSomething a then "*" else ""
 }
 
 data Action s =
     DoNothing {
-        agent :: Agent s
+        agent :: Agent
     } |
     Move {
-        agent :: Agent s
+        agent :: Agent
         -- moveDestPosX :: Integer,
         -- moveDestPosY :: Integer
     } |
     Clean {
-        agent :: Agent s
+        agent :: Agent
     } |
     LeaveBaby {
-        agent :: Agent s
+        agent :: Agent
     } |
     PickBaby {
-        agent :: Agent s
+        agent :: Agent
     } |
     CreateDirt {
-        agent :: Agent s
+        agent :: Agent
     }
 
 data AgentState =
@@ -50,7 +50,7 @@ data AgentState =
         -- Stores the ids of the agents that the robot is holding, 
         -- the agents should be in the same position of the robot
         holdingAgents :: [Id]
-    }
+    } deriving (Eq, Ord)
 
 agentTypeIs agentType agent = let agentAgentType = getAgentType agent in agentAgentType == agentType
 
@@ -68,6 +68,11 @@ getAgentFromAction PickBaby {agent = _agent} = _agent
 getAgentFromAction LeaveBaby {agent = _agent} = _agent
 getAgentFromAction CreateDirt {agent = _agent} = _agent
 
+isHoldingSomething agent =
+    case getAgentState agent of
+        RobotState {holdingAgents=_holdingAgents} -> (not . null) _holdingAgents
+        _ -> False
+
 changeAgentPos agent (posX, posY) = 
     let
         Agent {
@@ -81,6 +86,21 @@ changeAgentPos agent (posX, posY) =
         posY=posY, 
         agentId=_agentId, 
         state=_state}        
+
+changeAgentState agent state = 
+    let
+        Agent {
+                posX=_posX, 
+                posY=_posY, 
+                agentType=_agentType, 
+                agentId=_agentId
+            } = agent
+    in Agent {
+        agentType=_agentType, 
+        posX=_posX, 
+        posY=_posY, 
+        agentId=_agentId, 
+        state=state}        
 
 showAgent x y agents =
     let

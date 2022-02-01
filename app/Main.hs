@@ -20,7 +20,8 @@ initialGen = initRandomGen randomSeed
 
 -- Simulation's initial state  -- TODO Create a random initial env generator
 -- initState = initState0 initialGen
-initState = initStateBabyTest initialGen
+-- initState = initStateBabyTest initialGen
+initState = initStateRobotTest initialGen
 
 main = do
     putStrLn "Begining simulation"

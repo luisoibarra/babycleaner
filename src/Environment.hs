@@ -12,7 +12,7 @@ data Env s = Env {
     currentTurn :: Int,
     shuffleTurnAmount :: Int,
     currentIdPointer :: Int,
-    agents :: [Agent s]
+    agents :: [Agent]
 }
 
 instance Show (Env s) where {
@@ -222,5 +222,5 @@ addNewAgentToEnv env newAgent = let
             agents=toAddAgent:_agents
         }
 
-addNewAgentsToEnv :: Foldable t => Env s -> t (Agent s) -> Env s
+addNewAgentsToEnv :: Foldable t => Env s -> t Agent -> Env s
 addNewAgentsToEnv = foldl addNewAgentToEnv

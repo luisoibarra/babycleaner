@@ -4,6 +4,7 @@ module BehaviorUtils where
 import Environment
 import Agent
 import RandomUtils
+import Data.List (delete)
 
 -- Brook Architecture --
 
@@ -16,6 +17,12 @@ brookAgent beh env agent = foldl
         else acc) [] beh
 
 -- UTILS -- 
+
+
+inDirt = inAgentType Dirt
+inBaby = inAgentType Baby
+inPlaypen = inAgentType Playpen
+
 
 getAgentsInPosition x y = filter (\a -> getAgentPos a == (x, y))
 
@@ -49,6 +56,7 @@ holededByRobot env agent =
                     RobotState {holdingAgents=_holdingAgents} -> agentId `elem` _holdingAgents
                     _ -> False) robotStates
 
+
 -- Move Utils --
 
 -- Returns if a given agent can move to pos. (WITHOUT PUSHING)
@@ -69,9 +77,6 @@ canMoveNoPushing env agent pos = validEnvPosition env pos &&
          Baby -> all (== Baby) agentTypes
          -- Robot can be with other babies, on dirt and in a playpen
          Robot -> all (\a -> a `elem` [Dirt, Baby, Playpen]) agentTypes
-
-
-
 
 getAllMoveablePositions env validAgents agent =
     let
@@ -127,6 +132,7 @@ moveObstacleRecursive env agent pos =
                 else
                     (False, newEnv)
 
+
 -- Add Dirt Utils --
 
 -- Returns a list mapping positions to if it's dirty or not, and also the final generator
@@ -144,3 +150,41 @@ addDirtToPositions randGen positions maxAmountOfDirt prob =
                 ([], nextGen) shuffledPositions
     in
         ([pos | (dirty, pos) <- fst dirts, dirty], snd dirts)
+
+
+-- Pick up Utils --
+
+getAgentPicked agent = 
+    let
+        state = getAgentState agent
+    in case state of
+        RobotState {holdingAgents=_holdingAgents} -> _holdingAgents
+        _ -> []
+
+isAlreadyPicked env agent = 
+    let
+        allPicked = [x | ag <- getEnvAgents env, x <- getAgentPicked ag]
+        agentId = getAgentId agent
+    in 
+        agentId `elem` allPicked
+
+pickUpAgent agent agentToPick = 
+    let 
+        RobotState {holdingAgents=_holdingAgents} = getAgentState agent
+        toPickId = getAgentId agentToPick
+        newHoldingAgents = if toPickId `elem` _holdingAgents then _holdingAgents else toPickId:_holdingAgents
+        newState = RobotState {holdingAgents=newHoldingAgents}
+        newAgent = changeAgentState agent newState
+    in
+        newAgent
+
+dropAgent agent agentToDrop = 
+    let 
+        RobotState {holdingAgents=_holdingAgents} = getAgentState agent
+        toDropId = getAgentId agentToDrop
+        newHoldingAgents = if toDropId `notElem` _holdingAgents then _holdingAgents else delete toDropId _holdingAgents
+        newState = RobotState {holdingAgents=newHoldingAgents}
+        newAgent = changeAgentState agent newState
+    in
+        newAgent
+        

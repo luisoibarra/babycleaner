@@ -142,3 +142,91 @@ babyTestAgents = [
 
 initStateBabyTest initialGen = buildEnv (emptyDefaultEnv initialGen) babyTestAgents
 
+robotTestAgents = [
+        Agent {
+            agentId = 0,
+            posX = 0,
+            posY = 0,
+            agentType = Robot,
+            state = RobotState {
+                holdingAgents = []
+            }
+        },
+        Agent {
+            agentId = 0,
+            posX = 2,
+            posY = 0,
+            agentType = Robot,
+            state = RobotState {
+                holdingAgents = []
+            }
+        },
+        Agent {
+            agentId = 0,
+            posX = 3,
+            posY = 2,
+            agentType = Robot,
+            state = RobotState {
+                holdingAgents = []
+            }
+        },
+        Agent {
+            agentId = 0,
+            posX = 3,
+            posY = 2,
+            agentType = Baby,
+            state = EmptyState 
+        },
+
+        Agent {
+            agentId = 0,
+            posX = 3,
+            posY = 1,
+            agentType = Dirt,
+            state = EmptyState 
+        },
+        Agent {
+            agentId = 0,
+            posX = 3,
+            posY = 3,
+            agentType = Dirt,
+            state = EmptyState 
+        },
+        Agent {
+            agentId = 0,
+            posX = 4,
+            posY = 2,
+            agentType = Dirt,
+            state = EmptyState 
+        },
+        Agent {
+            agentId = 0,
+            posX = 2,
+            posY = 2,
+            agentType = Dirt,
+            state = EmptyState 
+        },
+        Agent {
+            agentId = 1,
+            posX = 2,
+            posY = 0,
+            agentType = Dirt,
+            state = EmptyState
+        },
+        Agent {
+            agentId = 2,
+            posX = 0,
+            posY = 0,
+            agentType = Baby,
+            state = EmptyState
+        },
+        Agent {
+            agentId = 3,
+            posX = 0,
+            posY = 0,
+            agentType = Playpen,
+            state = EmptyState
+        }
+    ]
+
+initStateRobotTest initialGen = buildEnv (emptyDefaultEnv initialGen) robotTestAgents

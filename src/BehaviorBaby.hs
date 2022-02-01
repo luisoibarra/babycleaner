@@ -13,8 +13,6 @@ babyBrookBehavior = [
         (\env agent -> True, \env agent -> [Move {agent = agent}, CreateDirt {agent = agent}])
     ]
 
-inPlaypen = inAgentType Playpen
-
 -- Apply Action to Env --
 
 applyMoveBabyActionToEnv env action =
