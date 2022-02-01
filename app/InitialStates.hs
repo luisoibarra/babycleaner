@@ -4,13 +4,19 @@ import RandomUtils
 import Environment
 import Agent
 
-initState0 initialGen = Env {
+
+
+emptyDefaultEnv initialGen = Env {
     height = 5,
     width = 5,
     randGen = initialGen,
     currentTurn = 0,
     shuffleTurnAmount = 10,
-    agents = [
+    currentIdPointer = 1,
+    agents = []
+}
+
+defaultAgents = [
         Agent {
             agentId = 0,
             posX = 0,
@@ -63,15 +69,12 @@ initState0 initialGen = Env {
             state = EmptyState
         }
     ]
-}
 
-initStateBabyTest initialGen = Env {
-    height = 5,
-    width = 5,
-    randGen = initialGen,
-    currentTurn = 0,
-    shuffleTurnAmount = 10,
-    agents = [
+buildEnv initialEnv agents = foldl addNewAgentToEnv initialEnv agents
+
+initState0 initialGen = buildEnv (emptyDefaultEnv initialGen) defaultAgents 
+
+babyTestAgents = [
         Agent {
             agentId = 1,
             posX = 0,
@@ -136,5 +139,6 @@ initStateBabyTest initialGen = Env {
             state = EmptyState
         }
     ]
-}
+
+initStateBabyTest initialGen = buildEnv (emptyDefaultEnv initialGen) babyTestAgents
 

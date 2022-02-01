@@ -11,6 +11,7 @@ data Env s = Env {
     randGen :: StdGen,
     currentTurn :: Int,
     shuffleTurnAmount :: Int,
+    currentIdPointer :: Int,
     agents :: [Agent s]
 }
 
@@ -81,12 +82,15 @@ validEnvPosition env pos =
 validPosition height width (posX, posY) = posX >= 0 && posY >= 0 && posX < width && posY < height
 
 -- Returns all valid pos's neighboring positions in a height X width matrix
-validNeighborsPosition height width pos = filter (validPosition height width) (positionsNextTo pos)
+validNeighborsPosition height width pos = filter (validPosition height width) (positionsNextToMoving pos)
+
+gridNeighborsPositions height width pos = filter (validPosition height width) (positionsNextToGrid pos)
+
 
 -- Returns a agent list grouped by position  
-neighborsAgents env pos = 
+neighborsAgents env pos =
     let
-        neighborsPos = filter (validEnvPosition env) (positionsNextTo pos)
+        neighborsPos = filter (validEnvPosition env) (positionsNextToMoving pos)
     in
         filter (validEnvPosition env . fst) [ (neighPos, getEnvPositionAgent env neighPos) | neighPos <- neighborsPos ]
 
@@ -103,6 +107,7 @@ addOneToTurnEnv env =
             randGen = _randGen,
             currentTurn=_currentTurn,
             shuffleTurnAmount=_shuffleTurnAmount,
+            currentIdPointer=_currentIdPointer,
             agents=_agents
         } = env
     in
@@ -112,48 +117,110 @@ addOneToTurnEnv env =
             randGen = _randGen,
             currentTurn=_currentTurn + 1,
             shuffleTurnAmount=_shuffleTurnAmount,
+            currentIdPointer = _currentIdPointer,
             agents=_agents
         }
 
-pickRandomFromListEnv env pickList = 
+pickRandomFromListEnv env pickList =
     let
         Env {
-                height=_height, 
-                width=_width, 
-                randGen=_randGen, 
-                currentTurn=_currentTurn, 
-                shuffleTurnAmount=_shuffleTurnAmount, 
+                height=_height,
+                width=_width,
+                randGen=_randGen,
+                currentTurn=_currentTurn,
+                currentIdPointer = _currentIdPointer,
+                shuffleTurnAmount=_shuffleTurnAmount,
                 agents=_agents
             } = env
         (element, nextGen) = pickRandomFromList pickList _randGen
         nextEnv = Env {
-                height=_height, 
-                width=_width, 
-                randGen=nextGen, 
-                currentTurn=_currentTurn, 
-                shuffleTurnAmount=_shuffleTurnAmount, 
+                height=_height,
+                width=_width,
+                randGen=nextGen,
+                currentTurn=_currentTurn,
+                currentIdPointer = _currentIdPointer,
+                shuffleTurnAmount=_shuffleTurnAmount,
                 agents=_agents
             }
     in
         (element, nextEnv)
 
-updateAgentEnv env oldAgent newAgent = 
+updateAgentEnv env oldAgent newAgent =
     let
+        deleteAgentEnv = deleteAgentFromEnv env oldAgent
         Env {
-                height=_height, 
-                width=_width, 
-                randGen=_randGen, 
-                currentTurn=_currentTurn, 
+                height=_height,
+                width=_width,
+                randGen=_randGen,
+                currentTurn=_currentTurn,
                 shuffleTurnAmount=_shuffleTurnAmount,
+                currentIdPointer = _currentIdPointer,
                 agents=_agents
-            } = env
-        newAgents = newAgent:[a | a <- _agents, getAgentId a /= getAgentId oldAgent]
+            } = deleteAgentEnv
+        newAgents = newAgent:_agents
     in
         Env {
                 height=_height,
-                width=_width, 
-                randGen=_randGen, 
-                currentTurn=_currentTurn, 
-                shuffleTurnAmount=_shuffleTurnAmount, 
+                width=_width,
+                randGen=_randGen,
+                currentTurn=_currentTurn,
+                shuffleTurnAmount=_shuffleTurnAmount,
+                currentIdPointer = _currentIdPointer,
                 agents=newAgents
             }
+
+deleteAgentFromEnv env deleteAgent =
+    let
+        Env {
+                height=_height,
+                width=_width,
+                randGen=_randGen,
+                currentTurn=_currentTurn,
+                shuffleTurnAmount=_shuffleTurnAmount,
+                currentIdPointer = _currentIdPointer,
+                agents=_agents
+            } = env
+        newAgents = [a | a <- _agents, getAgentId a /= getAgentId deleteAgent]
+    in
+        Env {
+                height=_height,
+                width=_width,
+                randGen=_randGen,
+                currentTurn=_currentTurn,
+                shuffleTurnAmount=_shuffleTurnAmount,
+                currentIdPointer = _currentIdPointer,
+                agents=newAgents
+            }
+
+-- Adds newAgent to the env updating the id for consistency
+addNewAgentToEnv env newAgent = let
+    Env {
+            height=_height,
+            width=_width,
+            randGen=_randGen,
+            currentTurn=_currentTurn,
+            shuffleTurnAmount=_shuffleTurnAmount,
+            currentIdPointer=_currentIdPointer,
+            agents=_agents
+        } = env
+    Agent {
+            agentType=_agentType,
+            posX=_posX,
+            posY=_posY,
+            agentId=_agentId,
+            state=_state
+        } = newAgent
+    newPointer = _currentIdPointer+1
+    toAddAgent = Agent {agentType=_agentType, posX=_posX, posY=_posY, agentId=newPointer, state=_state}
+    in Env {
+            height=_height,
+            width=_width,
+            randGen=_randGen,
+            currentTurn=_currentTurn,
+            shuffleTurnAmount=_shuffleTurnAmount,
+            currentIdPointer=newPointer,
+            agents=toAddAgent:_agents
+        }
+
+addNewAgentsToEnv :: Foldable t => Env s -> t (Agent s) -> Env s
+addNewAgentsToEnv = foldl addNewAgentToEnv

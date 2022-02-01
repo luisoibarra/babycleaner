@@ -3,11 +3,21 @@
 module Utils where
 
 
-dirs = [(0,1),(1,0),(-1,0),(0,-1)]
+moveDirs = [(0,1),(1,0),(-1,0),(0,-1)]
+gridDirs = [
+        (0,1),(1,0),(-1,0),(0,-1),
+        (1,1),(-1,1),(-1,-1),(1,-1),
+        (0,0)
+    ]
 
-positionsNextTo (posX, posY) = [ (posX + dX, posY + dY) | (dX, dY) <- dirs ]
+positionsNextTo :: [(Int, Int)] -> (Int, Int) -> [(Int, Int)]
+positionsNextTo dirs (posX, posY) = [ (posX + dX, posY + dY) | (dX, dY) <- dirs ]
 
-nextTo (posX, posY) (posX2, posY2) = any (\(dX, dY) -> posX == posX2 + dX && posY == posY2 + dY) dirs
+positionsNextToMoving = positionsNextTo moveDirs
+
+positionsNextToGrid = positionsNextTo gridDirs
+
+nextTo (posX, posY) (posX2, posY2) = any (\(dX, dY) -> posX == posX2 + dX && posY == posY2 + dY) moveDirs
 
 neighbors (posX, posY) = filter ( `nextTo` (posX, posY))
 

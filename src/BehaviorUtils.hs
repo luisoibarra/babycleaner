@@ -3,6 +3,7 @@ module BehaviorUtils where
 
 import Environment
 import Agent
+import RandomUtils
 
 -- Brook Architecture --
 
@@ -125,3 +126,21 @@ moveObstacleRecursive env agent pos =
                     (True, moveRawAgent newEnv agent pos)
                 else
                     (False, newEnv)
+
+-- Add Dirt Utils --
+
+-- Returns a list mapping positions to if it's dirty or not, and also the final generator
+addDirtToPositions randGen positions maxAmountOfDirt prob =
+    let
+        (shuffledPositions, nextGen) = shuffleList positions randGen
+        dirts = foldl (\(listDirtPos, currGen) pos -> 
+            let
+                (isDirtBernoulli, nextCurrGen) = bernoulliExperiment currGen prob
+                currentDirts = length $ [ isDirt | (isDirt, _) <- listDirtPos, isDirt]
+                newList = (isDirtBernoulli && currentDirts < maxAmountOfDirt, pos):listDirtPos
+            in 
+                (newList, nextCurrGen))
+                
+                ([], nextGen) shuffledPositions
+    in
+        ([pos | (dirty, pos) <- fst dirts, dirty], snd dirts)

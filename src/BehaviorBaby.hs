@@ -27,4 +27,54 @@ applyMoveBabyActionToEnv env action =
         else
             moveAgent nextRandEnv agent movePos
 
-applyCreateDirtBabyActionToEnv env action = env -- TODO
+-- Appear dirt probability
+dirtCreationProb = 0.25
+
+getMaxDirtAmount :: Int -> Int
+getMaxDirtAmount babiesAmount
+    | babiesAmount <= 0 = 0
+    | babiesAmount == 1 = 1
+    | babiesAmount == 2 = 3
+    | babiesAmount >= 3 = 6
+    | otherwise = error "Invalid babiesAmount range"
+
+
+applyCreateDirtBabyActionToEnv env action = 
+    let
+        agent = getAgentFromAction action
+        pos = getAgentPos agent
+        Env {
+            height=_height, 
+            width=_width, 
+            randGen=_randGen, 
+            currentTurn=_currentTurn, 
+            shuffleTurnAmount=_shuffleTurnAmount, 
+            currentIdPointer=_currentIdPointer, 
+            agents=_agents
+        } = env
+        gridValidPositions = gridNeighborsPositions _height _width pos
+        babyAmount = length $ foldl (\acc currPos -> acc ++ getSamePositionAndAgentType currPos Baby _agents ) [] gridValidPositions
+        maxDirtAmount = getMaxDirtAmount babyAmount
+        -- Get all empty positions around pos
+        emptyPositions = [p | p <- gridValidPositions, null $ getEnvPositionAgent env p]
+        (dirtPositions, dirtRandGen) = addDirtToPositions _randGen emptyPositions maxDirtAmount dirtCreationProb
+        initialEnv = Env {
+                height=_height, 
+                width=_width, 
+                randGen=dirtRandGen, 
+                currentTurn=_currentTurn, 
+                shuffleTurnAmount=_shuffleTurnAmount, 
+                currentIdPointer=_currentIdPointer, 
+                agents=_agents
+            }
+    in
+        addNewAgentsToEnv initialEnv 
+            [
+                Agent { 
+                    agentType=Dirt, 
+                    posX=posX, 
+                    posY=posY, 
+                    agentId=0, 
+                    state=EmptyState } 
+                    | (posX, posY) <- dirtPositions
+            ]
