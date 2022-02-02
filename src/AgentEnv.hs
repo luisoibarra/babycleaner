@@ -20,7 +20,7 @@ getAgentActions env agent =
 
 -- AGENT TYPE GET ACTIONS --
 
-getDoNothingAction env agent = [DoNothing agent]
+getDoNothingAction env agent = (env, [DoNothing agent])
 
 getRobotAction = brookAgent robotBrookBehavior 
 

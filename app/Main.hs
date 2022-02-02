@@ -8,6 +8,7 @@ import AgentEnv
 import RandomUtils
 import Debug.Trace
 import InitialStates
+import BehaviorUtils
 
 -- Simulation Initial State --
 
@@ -25,7 +26,9 @@ initState = initStateRobotTest initialGen
 
 main = do
     putStrLn "Begining simulation"
-    print $ beginSimulation initState
+    print $ agentBfs [Dirt] initState Agent { agentType=Robot, posX=3, posY=2, agentId=1, state=EmptyState }
+    print $ simulationLoop initState
+    -- print $ beginSimulation initState
     putStrLn "Simulation end"
 
 beginSimulation initialState =
@@ -57,14 +60,20 @@ All agents interact with the environment
 
 cenv = env
 for a in agents:
-    for action in actions(a):
+    (afterEnv, actions) = getActions(cenv, a):
+    cenv = afterEnv
+    for a in actions:
         cenv = modEnv(cenv, action)
 return cenv
-
 -}
 interactAllAgent env [] = env
 interactAllAgent env agents =
-    foldl (\currentEnv agent -> foldl getEnvFromAction currentEnv (getAgentActions currentEnv agent)) env agents
+    foldl (
+        \currentEnv agent -> 
+            let 
+                (afterEnv, actions) = getAgentActions currentEnv agent 
+            in 
+                foldl getEnvFromAction afterEnv actions) env agents 
 
 doEnvNaturalChange env =
     let

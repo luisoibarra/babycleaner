@@ -27,7 +27,8 @@ data Action s =
         agent :: Agent
     } |
     Move {
-        agent :: Agent
+        agent :: Agent,
+        destination :: (Int, Int)
         -- moveDestPosX :: Integer,
         -- moveDestPosY :: Integer
     } |

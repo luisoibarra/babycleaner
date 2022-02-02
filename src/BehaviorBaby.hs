@@ -8,22 +8,29 @@ import Agent
 
 babyBrookBehavior = [
         -- DoNothing When? -> In Playpen | When been holded by a Robot
-        (inPlaypen, \env agent -> [DoNothing {agent = agent}]),
-        (holededByRobot, \env agent -> [DoNothing {agent = agent}]),
-        (\env agent -> True, \env agent -> [Move {agent = agent}, CreateDirt {agent = agent}])
+        (inPlaypen, \env agent -> (env, [DoNothing {agent = agent}])),
+        (holededByRobot, \env agent -> (env, [DoNothing {agent = agent}])),
+        (\env agent -> True, getMoveBabyActions)
     ]
+
+-- Get Actions --
+
+getMoveBabyActions env agent =
+    let
+        possibleMovePositions = getAllMoveablePositions env [Obstacle, Baby] $ getAgentPos agent
+        (movePos, nextRandEnv) = pickRandomFromListEnv env possibleMovePositions
+    in  if null possibleMovePositions then
+            (env, [DoNothing {agent=agent}])
+        else
+            (nextRandEnv, [Move {agent = agent, destination = movePos}, CreateDirt {agent = agent}])
 
 -- Apply Action to Env --
 
 applyMoveBabyActionToEnv env action =
     let
-        agent = getAgentFromAction action
-        possibleMovePositions = getAllMoveablePositions env [Obstacle, Baby] agent
-        (movePos, nextRandEnv) = pickRandomFromListEnv env possibleMovePositions
-    in  if null possibleMovePositions then
-            env
-        else
-            moveAgent nextRandEnv agent movePos
+        Move {agent=agent, destination=movePos} = action
+    in  
+        snd $ moveObstacleRecursive env agent movePos
 
 -- Appear dirt probability
 dirtCreationProb = 0.25

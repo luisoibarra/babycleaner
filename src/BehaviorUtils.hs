@@ -5,16 +5,23 @@ import Environment
 import Agent
 import RandomUtils
 import Data.List (delete)
+import Debug.Trace
 
 -- Brook Architecture --
+{-
+The first predicate that is true, the corresponding action function is applied, 
+returning a tuple of the env and the actions to perform.
 
+The only changes in the environment should be in the randomGenerator. Any other changes should be 
+reflected in the action list
+-}
 brookAgent beh env agent = foldl
-    (\acc (pred, actionFun) ->
-        if null acc then
+    (\(accEnv, actions) (pred, actionFun) ->
+        if null actions then
             if pred env agent then
                 actionFun env agent
-            else []
-        else acc) [] beh
+            else (accEnv, [])
+        else (accEnv, actions)) (env, []) beh
 
 -- UTILS -- 
 
@@ -78,10 +85,9 @@ canMoveNoPushing env agent pos = validEnvPosition env pos &&
          -- Robot can be with other babies, on dirt and in a playpen
          Robot -> all (\a -> a `elem` [Dirt, Baby, Playpen]) agentTypes
 
-getAllMoveablePositions env validAgents agent =
+getAllMoveablePositions env validAgents agentPos =
     let
         Env {height=_height, width=_width} = env
-        agentPos = getAgentPos agent
         -- Mapping agentList to (cellPosition, agentList)
         currentNeighborsAgents = neighborsAgents env agentPos
         -- All empty or occupied by only validAgents positions
@@ -94,19 +100,10 @@ getAllMoveablePositions env validAgents agent =
     in
         possibleMovePositions
 
--- Returns a new env with all movement changes made. Assumes that the inputs are correct
-moveAgent env agent pos =
-    let
-        agentType = getAgentType agent
-    in case agentType of
-        Baby -> snd $ moveObstacleRecursive env agent pos
-        Robot -> moveRawAgent env agent pos
-        _ -> error $ "Agent " ++ show agent ++ " can't move"
-
 moveRawAgent env agent pos =
     let
         newAgent = changeAgentPos agent pos
-        envAgentPosUpdated = updateAgentEnv env agent newAgent
+        envAgentPosUpdated = updateAgentInEnv env agent newAgent
     in
         envAgentPosUpdated
 
@@ -132,6 +129,39 @@ moveObstacleRecursive env agent pos =
                 else
                     (False, newEnv)
 
+{-
+Returns a list of tuple containing in the first space the found agent and in the second space
+the current optimal path to it. -> [(Agent, [(Int, Int)])]
+-}
+agentBfs allowedAgentsInPath env agent = -- TODO
+    let
+        pos = getAgentPos agent
+        agents = getEnvAgents env
+    in
+        innerAgentBfs allowedAgentsInPath env pos [pos] [] [] [(agent, [])]
+
+innerAgentBfs allowedAgentsInPath env currentPos visitedPositions pendingPositions currentPath currentAgentsDistanceInfo =
+    let
+        (posX, posY) = currentPos
+        Env {height=_height, width=_width, agents=_agents} = env
+        
+        allValidToVisitPositions = getAllMoveablePositions env allowedAgentsInPath currentPos
+        notSeenPositions = map (\pos -> (pos, currentPath ++ [pos])) $ filter (`notElem` visitedPositions) allValidToVisitPositions
+        allPendingPositions = pendingPositions ++ notSeenPositions
+
+        agentsInCurrentPosition = getAgentsInPosition posX posY _agents
+        newCurrentAgentsDistanceInfo = currentAgentsDistanceInfo ++ map (\a -> (a, currentPath)) agentsInCurrentPosition
+
+        (newCurrentPos, newCurrentPath) = head allPendingPositions
+        newPendingPositions = tail allPendingPositions
+    
+        newVisitedPositions = currentPos:visitedPositions
+    in
+        if null allPendingPositions then
+            newCurrentAgentsDistanceInfo
+        else
+            innerAgentBfs allowedAgentsInPath env newCurrentPos newVisitedPositions newPendingPositions newCurrentPath newCurrentAgentsDistanceInfo
+
 
 -- Add Dirt Utils --
 
@@ -139,14 +169,14 @@ moveObstacleRecursive env agent pos =
 addDirtToPositions randGen positions maxAmountOfDirt prob =
     let
         (shuffledPositions, nextGen) = shuffleList positions randGen
-        dirts = foldl (\(listDirtPos, currGen) pos -> 
+        dirts = foldl (\(listDirtPos, currGen) pos ->
             let
                 (isDirtBernoulli, nextCurrGen) = bernoulliExperiment currGen prob
                 currentDirts = length $ [ isDirt | (isDirt, _) <- listDirtPos, isDirt]
                 newList = (isDirtBernoulli && currentDirts < maxAmountOfDirt, pos):listDirtPos
-            in 
+            in
                 (newList, nextCurrGen))
-                
+
                 ([], nextGen) shuffledPositions
     in
         ([pos | (dirty, pos) <- fst dirts, dirty], snd dirts)
@@ -154,22 +184,22 @@ addDirtToPositions randGen positions maxAmountOfDirt prob =
 
 -- Pick up Utils --
 
-getAgentPicked agent = 
+getAgentPicked agent =
     let
         state = getAgentState agent
     in case state of
         RobotState {holdingAgents=_holdingAgents} -> _holdingAgents
         _ -> []
 
-isAlreadyPicked env agent = 
+isAlreadyPicked env agent =
     let
         allPicked = [x | ag <- getEnvAgents env, x <- getAgentPicked ag]
         agentId = getAgentId agent
-    in 
+    in
         agentId `elem` allPicked
 
-pickUpAgent agent agentToPick = 
-    let 
+pickUpAgent agent agentToPick =
+    let
         RobotState {holdingAgents=_holdingAgents} = getAgentState agent
         toPickId = getAgentId agentToPick
         newHoldingAgents = if toPickId `elem` _holdingAgents then _holdingAgents else toPickId:_holdingAgents
@@ -178,8 +208,8 @@ pickUpAgent agent agentToPick =
     in
         newAgent
 
-dropAgent agent agentToDrop = 
-    let 
+dropAgent agent agentToDrop =
+    let
         RobotState {holdingAgents=_holdingAgents} = getAgentState agent
         toDropId = getAgentId agentToDrop
         newHoldingAgents = if toDropId `notElem` _holdingAgents then _holdingAgents else delete toDropId _holdingAgents

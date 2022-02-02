@@ -145,7 +145,7 @@ pickRandomFromListEnv env pickList =
     in
         (element, nextEnv)
 
-updateAgentEnv env oldAgent newAgent =
+updateAgentInEnv env oldAgent newAgent =
     let
         deleteAgentEnv = deleteAgentFromEnv env oldAgent
         Env {
