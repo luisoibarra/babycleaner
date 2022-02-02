@@ -85,17 +85,35 @@ canMoveNoPushing env agent pos = validEnvPosition env pos &&
          -- Robot can be with other babies, on dirt and in a playpen
          Robot -> all (\a -> a `elem` [Dirt, Baby, Playpen]) agentTypes
 
-getAllMoveablePositions env validAgents agentPos =
+isAllAgentType validAgentTypes env agent = all (\a -> let
+                                             agentType = getAgentType a
+                                         in
+                                             agentType `elem` validAgentTypes)
+
+agentCanPassThrough env agent agentsInPosition = case getAgentType agent of
+  Baby -> null agentsInPosition || isAllAgentType [Obstacle] env agent agentsInPosition
+                                    -- Can pass through a baby and dirt
+  Robot -> null agentsInPosition || isAllAgentType [Baby, Dirt] env agent agentsInPosition ||
+           -- Can pass through playpens
+           isAllAgentType [Playpen] env agent agentsInPosition || 
+           -- Can pass through playpens with babies only if not holding a baby
+           ((not . null . getHoldingIds . getAgentState) agent && isAllAgentType [Playpen, Baby] env agent agentsInPosition) 
+  Obstacle -> False
+  Playpen -> False
+  Dirt -> False
+
+
+getAllMoveablePositions env canPassAgent agent position =
     let
         Env {height=_height, width=_width} = env
         -- Mapping agentList to (cellPosition, agentList)
-        currentNeighborsAgents = neighborsAgents env agentPos
+        currentNeighborsAgents = neighborsAgents env position
         -- All empty or occupied by only validAgents positions
         possibleMovePositions = [pos | (pos, agents) <- currentNeighborsAgents,
                 -- Empty
                 null agents ||
                 -- Occuppied by only validAgents 
-                all (\a -> let agentType = getAgentType a in agentType `elem` validAgents) agents
+                canPassAgent env agent agents
             ]
     in
         possibleMovePositions
@@ -132,35 +150,36 @@ moveObstacleRecursive env agent pos =
 {-
 Returns a list of tuple containing in the first space the found agent and in the second space
 the current optimal path to it. -> [(Agent, [(Int, Int)])]
+
 -}
-agentBfs allowedAgentsInPath env agent = -- TODO
+agentBfs canPassAgent env agent =
     let
         pos = getAgentPos agent
         agents = getEnvAgents env
     in
-        innerAgentBfs allowedAgentsInPath env pos [pos] [] [] [(agent, [])]
+        innerAgentBfs canPassAgent agent env [] [(pos,[])] []
 
-innerAgentBfs allowedAgentsInPath env currentPos visitedPositions pendingPositions currentPath currentAgentsDistanceInfo =
+innerAgentBfs _ _ _ _ [] currentAgentsDistanceInfo = currentAgentsDistanceInfo
+innerAgentBfs canPassAgent agent env visitedPositions pendingPositions currentAgentsDistanceInfo =
     let
+        (currentPos, currentPath) = head pendingPositions
+
         (posX, posY) = currentPos
         Env {height=_height, width=_width, agents=_agents} = env
-        
-        allValidToVisitPositions = getAllMoveablePositions env allowedAgentsInPath currentPos
-        notSeenPositions = map (\pos -> (pos, currentPath ++ [pos])) $ filter (`notElem` visitedPositions) allValidToVisitPositions
-        allPendingPositions = pendingPositions ++ notSeenPositions
+
+        allValidToVisitPositions = getAllMoveablePositions env canPassAgent agent currentPos
+        notSeenPositions = map (\pos -> (pos, currentPath ++ [pos])) $ filter (\x -> x `notElem` visitedPositions && x `notElem` map fst pendingPositions) allValidToVisitPositions
+        allPendingPositions = tail pendingPositions ++ notSeenPositions
 
         agentsInCurrentPosition = getAgentsInPosition posX posY _agents
         newCurrentAgentsDistanceInfo = currentAgentsDistanceInfo ++ map (\a -> (a, currentPath)) agentsInCurrentPosition
 
-        (newCurrentPos, newCurrentPath) = head allPendingPositions
-        newPendingPositions = tail allPendingPositions
-    
         newVisitedPositions = currentPos:visitedPositions
     in
         if null allPendingPositions then
             newCurrentAgentsDistanceInfo
         else
-            innerAgentBfs allowedAgentsInPath env newCurrentPos newVisitedPositions newPendingPositions newCurrentPath newCurrentAgentsDistanceInfo
+            innerAgentBfs canPassAgent agent env newVisitedPositions allPendingPositions newCurrentAgentsDistanceInfo
 
 
 -- Add Dirt Utils --

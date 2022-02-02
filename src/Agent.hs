@@ -62,6 +62,11 @@ getAgentType agent = let Agent {agentType = agentAgentType } = agent in agentAge
 getAgentState agent = let Agent {state = state } = agent in state
 getAgentId agent = let Agent { agentId = id } = agent in id
 
+getHoldingIds agentState = 
+    case agentState of
+        EmptyState -> []
+        RobotState {holdingAgents=_holdingAgents} -> _holdingAgents
+
 getAgentFromAction DoNothing {agent = _agent} = _agent
 getAgentFromAction Move {agent = _agent} = _agent
 getAgentFromAction Clean {agent = _agent} = _agent
@@ -116,13 +121,14 @@ showAgent x y agents =
 
 showBoard height width agents =
     let
-        horizontalDelimiter = "-" ++ concat (replicate height "----")
+        horizontalDelimiter = "  -" ++ concat (replicate height "----")
         verticalDelimiter = "|"
     in
+        "    " ++ concat [show i ++ "   " | i <- [0..width-1]] ++ "\n" ++
         horizontalDelimiter ++ "\n" ++
         -- Row
         concat [
-            (verticalDelimiter ++ concat [showAgent x y agents ++ verticalDelimiter | x <- [0..width-1]])
+            (show y ++ " " ++ verticalDelimiter ++ concat [showAgent x y agents ++ verticalDelimiter | x <- [0..width-1]])
             ++ "\n"
             ++ horizontalDelimiter ++ "\n"
             | y <- [height-1,height-2..0]]

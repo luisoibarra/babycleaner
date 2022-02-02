@@ -17,10 +17,12 @@ babyBrookBehavior = [
 
 getMoveBabyActions env agent =
     let
-        possibleMovePositions = getAllMoveablePositions env [Obstacle, Baby] $ getAgentPos agent
+        position = getAgentPos agent
+        -- Can move only if it is empty or there are only obstacles
+        possibleMovePositions = getAllMoveablePositions env (isAllAgentType [Obstacle]) agent position
         (movePos, nextRandEnv) = pickRandomFromListEnv env possibleMovePositions
     in  if null possibleMovePositions then
-            (env, [DoNothing {agent=agent}])
+            (env, [DoNothing {agent=agent}, CreateDirt {agent = agent}])
         else
             (nextRandEnv, [Move {agent = agent, destination = movePos}, CreateDirt {agent = agent}])
 

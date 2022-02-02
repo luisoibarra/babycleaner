@@ -26,7 +26,7 @@ initState = initStateRobotTest initialGen
 
 main = do
     putStrLn "Begining simulation"
-    print $ agentBfs [Dirt] initState Agent { agentType=Robot, posX=3, posY=2, agentId=1, state=EmptyState }
+    print $ agentBfs agentCanPassThrough initState Agent { agentType=Robot, posX=3, posY=2, agentId=1, state=EmptyState }
     print $ simulationLoop initState
     -- print $ beginSimulation initState
     putStrLn "Simulation end"

@@ -154,6 +154,13 @@ robotTestAgents = [
         },
         Agent {
             agentId = 0,
+            posX = 0,
+            posY = 4,
+            agentType = Dirt,
+            state = EmptyState 
+        },
+        Agent {
+            agentId = 0,
             posX = 2,
             posY = 0,
             agentType = Robot,
