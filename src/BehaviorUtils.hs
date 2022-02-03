@@ -4,7 +4,7 @@ module BehaviorUtils where
 import Environment
 import Agent
 import RandomUtils
-import Data.List (delete)
+import Data.List (delete, sortOn)
 import Debug.Trace
 
 -- Brook Architecture --
@@ -95,9 +95,9 @@ agentCanPassThrough env agent agentsInPosition = case getAgentType agent of
                                     -- Can pass through a baby and dirt
   Robot -> null agentsInPosition || isAllAgentType [Baby, Dirt] env agent agentsInPosition ||
            -- Can pass through playpens
-           isAllAgentType [Playpen] env agent agentsInPosition || 
+           isAllAgentType [Playpen] env agent agentsInPosition ||
            -- Can pass through playpens with babies only if not holding a baby
-           ((not . null . getHoldingIds . getAgentState) agent && isAllAgentType [Playpen, Baby] env agent agentsInPosition) 
+           ((not . null . getHoldingIds . getAgentState) agent && isAllAgentType [Playpen, Baby] env agent agentsInPosition)
   Obstacle -> False
   Playpen -> False
   Dirt -> False
@@ -181,6 +181,15 @@ innerAgentBfs canPassAgent agent env visitedPositions pendingPositions currentAg
         else
             innerAgentBfs canPassAgent agent env newVisitedPositions allPendingPositions newCurrentAgentsDistanceInfo
 
+-- Return the closest path to an agent that fulfils condition. If no path exist, returns the empty list
+goToNearest condition env agent =
+    let
+        -- Paths that leads to an agent of type agentType
+        paths = [snd x | x <- agentBfs agentCanPassThrough env agent, condition env (fst x)]
+        toSortPaths = map (\path -> (length path, path)) paths
+        sortedPath = sortOn fst toSortPaths
+    in
+        if null sortedPath then [] else (snd . head) sortedPath
 
 -- Add Dirt Utils --
 
