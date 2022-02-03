@@ -2,7 +2,9 @@ module InitialStates where
 
 import RandomUtils
 import Environment
+import System.Random
 import Agent
+import AgentEnv (randomlyChangeEnv)
 
 
 
@@ -233,9 +235,36 @@ robotTestAgents = [
             posY = 0,
             agentType = Playpen,
             state = EmptyState
+        },
+        Agent {
+            agentId = 3,
+            posX = 0,
+            posY = 1,
+            agentType = Playpen,
+            state = EmptyState
+        },
+        Agent {
+            agentId = 3,
+            posX = 1,
+            posY = 1,
+            agentType = Playpen,
+            state = EmptyState
         }
     ]
 
 initStateRobotTest initialGen = buildEnv (emptyDefaultEnv initialGen) robotTestAgents
 
 
+getRandomInitialEnv babiesAmount robotsAmount dirtAmount obstacleAmount height width shuffleTurn seed =
+    let 
+        randGen = mkStdGen seed
+        babies = [getDefaultAgentFromAgentType Baby | _ <- [1..babiesAmount]]
+        playpens = [getDefaultAgentFromAgentType Playpen | _ <- [1..babiesAmount]]
+        robots = [getDefaultAgentFromAgentType Robot | _ <- [1..robotsAmount]]
+        dirt = [getDefaultAgentFromAgentType Dirt | _ <- [1..dirtAmount]]
+        obstacles = [getDefaultAgentFromAgentType Obstacle | _ <- [1..obstacleAmount]]
+        initEnv = Env {height=height, width=width, randGen=randGen, currentTurn=0, shuffleTurnAmount=shuffleTurn, currentIdPointer=1, agents=[]}
+        finalEnv = foldl addNewAgentToEnv initEnv (babies ++ playpens ++ robots ++ dirt ++ obstacles)
+    in
+        randomlyChangeEnv finalEnv
+    

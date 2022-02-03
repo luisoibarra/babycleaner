@@ -3,6 +3,7 @@ module BehaviorRobot where
 import Agent
 import BehaviorUtils
 import Environment
+import Debug.Trace
 
 -- Brook Behavior--
 
@@ -11,7 +12,7 @@ robotBrookBehavior = [
     -- TESTING LOGIC
 
     -- (inDirt, \env agent -> (env, [Clean {agent=agent}])),
-    -- (\env agent -> not (inPlaypen env agent) && isHoldingSomething agent, getMoveRobotActions),
+    -- (\env agent -> not (inPlaypen env agent) && isHoldingSomething agent, testGetMoveRobotActions),
     -- (\env agent -> inPlaypen env agent && isHoldingSomething agent, \env agent -> (env, [LeaveBaby {agent=agent}])),
     -- (inBaby, \env agent -> (env, [PickBaby {agent=agent}])) -- Warning Cycle
 
@@ -125,7 +126,7 @@ cleanDirt env agent
                 ]
             else error "Invalid pathLength")
 
-getMoveRobotActions env agent = -- TODO
+testGetMoveRobotActions env agent =
     let
         (posX, posY) = getAgentPos agent
     in
@@ -136,7 +137,6 @@ getMoveRobotActions env agent = -- TODO
 applyMoveRobotActionToEnv env action =
     let
         Move {agent=_agent, destination=_destination} = action
-        pos = getAgentPos _agent
         agents = getEnvAgents env
         agentsPicked = getAgentPicked _agent
         holdingAgentList = filter (\agent -> getAgentId agent `elem` agentsPicked) agents

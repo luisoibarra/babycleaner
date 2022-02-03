@@ -1,7 +1,7 @@
 module Agent where
 
 
-data AgentType = Obstacle | Playpen | Dirt | Baby | Robot deriving (Eq, Ord, Show)
+data AgentType = Playpen | Obstacle | Dirt | Baby | Robot deriving (Eq, Ord, Show)
 
 type Id = Int
 
@@ -29,8 +29,6 @@ data Action s =
     Move {
         agent :: Agent,
         destination :: (Int, Int)
-        -- moveDestPosX :: Integer,
-        -- moveDestPosY :: Integer
     } |
     Clean {
         agent :: Agent
@@ -78,6 +76,36 @@ isHoldingSomething agent =
     case getAgentState agent of
         RobotState {holdingAgents=_holdingAgents} -> (not . null) _holdingAgents
         _ -> False
+
+getDefaultAgentFromAgentTypeAndPos agentType (posX, posY) = 
+    let 
+        defaultAgent = getDefaultAgentFromAgentType agentType
+        Agent {agentType=_agentType, posX=_posX, posY=_posY, agentId=_agentId, state=_state} = defaultAgent
+    in
+        Agent {agentType=_agentType, posX=posX, posY=posY, agentId=_agentId, state=_state}
+
+getDefaultAgentFromAgentType agentType = 
+    Agent {agentType=agentType, posX=0, posY=0, agentId=0, state=defaultAgentState agentType}
+
+defaultAgentState agentType =
+    case agentType of
+        Robot -> RobotState {holdingAgents=[]}
+        _ -> EmptyState
+
+inverseOrderAgentType agentType = 
+    case agentType of
+        Obstacle -> 5
+        Playpen -> 4
+        Dirt -> 3
+        Baby -> 2
+        Robot -> 1
+
+resetAgentStateAndChangePos agent newPosition =
+    let
+        newPosAgent = changeAgentPos agent newPosition
+        newStateAgent = changeAgentState newPosAgent (defaultAgentState $ getAgentType newPosAgent)
+    in 
+        newStateAgent
 
 changeAgentPos agent (posX, posY) = 
     let

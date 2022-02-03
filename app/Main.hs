@@ -1,6 +1,5 @@
 module Main where
 
-import Control.Exception (assert)
 import Environment
 import Agent
 import Utils
@@ -9,6 +8,7 @@ import RandomUtils
 import Debug.Trace
 import InitialStates
 import BehaviorUtils
+import Data.List
 
 -- Simulation Initial State --
 
@@ -17,18 +17,26 @@ maxTurn = 10
 
 -- RandomGen Configuration
 randomSeed = 10
-initialGen = initRandomGen randomSeed
+randomInitialBabiesPlaypens = 1
+randomInitialRobots = 1
+randomInitialObstacles = 0
+randomInitialDirt = 0
+defaultHeight = 2
+defaultWidth = 2
+defaultShuffleTurn = 10
 
 -- Simulation's initial state  -- TODO Create a random initial env generator
+-- initialGen = initRandomGen randomSeed
 -- initState = initState0 initialGen
 -- initState = initStateBabyTest initialGen
-initState = initStateRobotTest initialGen
+-- initState = initStateRobotTest initialGen
+initState = getRandomInitialEnv randomInitialBabiesPlaypens randomInitialRobots randomInitialDirt randomInitialObstacles defaultHeight defaultWidth defaultShuffleTurn randomSeed
 
 main = do
+    -- print $ agentBfs agentCanPassThrough initState Agent { agentType=Robot, posX=3, posY=2, agentId=1, state=EmptyState }
     putStrLn "Begining simulation"
-    print $ agentBfs agentCanPassThrough initState Agent { agentType=Robot, posX=3, posY=2, agentId=1, state=EmptyState }
-    print $ simulationLoop initState
-    -- print $ beginSimulation initState
+    -- print $ simulationLoop initState
+    print $ beginSimulation initState
     putStrLn "Simulation end"
 
 beginSimulation initialState =
@@ -68,12 +76,16 @@ return cenv
 -}
 interactAllAgent env [] = env
 interactAllAgent env agents =
-    foldl (
+    let 
+        -- First goes the Robots then Babies and so on
+        orderedAgents = sortOn (inverseOrderAgentType . getAgentType) agents
+    in
+        foldl (
         \currentEnv agent -> 
             let 
                 (afterEnv, actions) = getAgentActions currentEnv agent 
             in 
-                foldl getEnvFromAction afterEnv actions) env agents 
+                foldl getEnvFromAction afterEnv actions) env orderedAgents 
 
 doEnvNaturalChange env =
     let

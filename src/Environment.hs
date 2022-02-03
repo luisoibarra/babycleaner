@@ -98,6 +98,27 @@ neighborsAgents env pos =
 -- Returns all agents in given position
 getEnvPositionAgent env pos = filter (\a -> getAgentPos a == pos) $ getEnvAgents env
 
+changeEnvRandGen env newRandGen =
+    let
+        Env {
+            height=_height,
+            width=_width,
+            currentTurn=_currentTurn,
+            shuffleTurnAmount=_shuffleTurnAmount,
+            currentIdPointer=_currentIdPointer,
+            agents=_agents
+        } = env
+    in
+        Env {
+            height=_height,
+            width=_width,
+            randGen = newRandGen,
+            currentTurn=_currentTurn,
+            shuffleTurnAmount=_shuffleTurnAmount,
+            currentIdPointer = _currentIdPointer,
+            agents=_agents
+        }
+
 
 addOneToTurnEnv env =
     let

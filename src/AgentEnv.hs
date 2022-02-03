@@ -5,6 +5,8 @@ import Environment
 import BehaviorUtils
 import BehaviorBaby
 import BehaviorRobot
+import Data.List (sortOn, delete)
+import RandomUtils
 
 -- GET AGENT ACTIONS --
 
@@ -83,4 +85,68 @@ applyCreateDirtActionToEnv env action =
 
 -- RANDOM ENV CHANGE --
 
-randomlyChangeEnv env = env -- TODO
+randomlyChangeEnv env = 
+    let 
+        _allPositions = [(x,y) | x <- [0.._width-1], y <- [0.._height-1]]
+        (initPlaypenPosition, newEnv) = pickRandomFromListEnv env _allPositions
+        (newEnv2, newPlaypen) = buildRandomPlaypen newEnv initPlaypenPosition
+        allPositions = filter (\x -> x `notElem` map getAgentPos newPlaypen) _allPositions
+
+        Env {
+            height=_height, 
+            width=_width, 
+            randGen=_randGen, 
+            currentTurn=_currentTurn, 
+            shuffleTurnAmount=_shuffleTurnAmount, 
+            currentIdPointer=_currentIdPointer, 
+            agents=_agents
+        } = newEnv2
+
+        sortedAgents = sortOn getAgentType $ filter (\x -> getAgentType x /= Playpen) _agents
+
+        (finalGen, _, newAgentsNoPlaypen) = foldl addAgentToRandomPosition (_randGen, allPositions, []) sortedAgents
+        finalEnv = Env {
+                height=_height, 
+                width=_width, 
+                randGen=finalGen, 
+                currentTurn=_currentTurn, 
+                shuffleTurnAmount=_shuffleTurnAmount, 
+                currentIdPointer=_currentIdPointer, 
+                agents=newAgentsNoPlaypen ++ newPlaypen
+            }
+    in
+        if _currentTurn `mod` _shuffleTurnAmount == 0 then
+            finalEnv
+        else
+            env
+    
+addAgentToRandomPosition (currentGen, [], currAgentList) _ = (currentGen, [], currAgentList)
+addAgentToRandomPosition (currentGen, availablePositions, currAgentList) agentToAdd = 
+    let
+        (selectedPosition, finalGenerator) = pickRandomFromList availablePositions currentGen
+        newAvailablePositions = delete selectedPosition availablePositions
+        newAgent = resetAgentStateAndChangePos agentToAdd selectedPosition
+        newCurrentAgentList = newAgent:currAgentList
+    in
+        (finalGenerator, newAvailablePositions, newCurrentAgentList)
+
+buildRandomPlaypen env initialPos = 
+    let
+        Env {height=_height, width=_width, randGen=_randGen, agents=_agents} = env
+        neighbors = validNeighborsPosition _height _width initialPos
+        (pos, nextGen) = pickRandomFromList neighbors _randGen
+        allPlaypens = getAgentsAgentType Playpen _agents
+        (_, newPlaypens, finalRandGen, _) = foldl expandPlaypen (env, [], nextGen, pos) allPlaypens
+    in
+        (changeEnvRandGen env finalRandGen, newPlaypens)
+
+expandPlaypen (env, agents, randGen, position) agent = 
+    let
+        Env {height=_height, width=_width} = env
+        validPositions = filter (\pos -> pos `notElem` map getAgentPos agents) $ validNeighborsPosition _height _width position
+        (selectedPosition, finalRandGen) = pickRandomFromList validPositions randGen
+        newAgent = resetAgentStateAndChangePos agent selectedPosition 
+
+    in
+        (env, newAgent:agents, finalRandGen, selectedPosition)
+
