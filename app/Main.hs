@@ -10,32 +10,27 @@ import InitialStates
 import BehaviorUtils
 import Data.List
 
--- Simulation Initial State --
+-- Initial Configuration --
 
--- Simulation's max turn
 maxTurn = 10
-
--- RandomGen Configuration
 randomSeed = 10
-randomInitialBabiesPlaypens = 1
-randomInitialRobots = 1
-randomInitialObstacles = 0
-randomInitialDirt = 0
-defaultHeight = 2
-defaultWidth = 2
+initialBabiesPlaypens = 2
+initialRobots = 2
+initialObstacles = 3
+initialDirt = 0
+defaultHeight = 6
+defaultWidth = 6
 defaultShuffleTurn = 10
 
--- Simulation's initial state  -- TODO Create a random initial env generator
+-- Simulation's initial state
 -- initialGen = initRandomGen randomSeed
 -- initState = initState0 initialGen
 -- initState = initStateBabyTest initialGen
 -- initState = initStateRobotTest initialGen
-initState = getRandomInitialEnv randomInitialBabiesPlaypens randomInitialRobots randomInitialDirt randomInitialObstacles defaultHeight defaultWidth defaultShuffleTurn randomSeed
+initState = getRandomInitialEnv initialBabiesPlaypens initialRobots initialDirt initialObstacles defaultHeight defaultWidth defaultShuffleTurn randomSeed
 
 main = do
-    -- print $ agentBfs agentCanPassThrough initState Agent { agentType=Robot, posX=3, posY=2, agentId=1, state=EmptyState }
     putStrLn "Begining simulation"
-    -- print $ simulationLoop initState
     print $ beginSimulation initState
     putStrLn "Simulation end"
 

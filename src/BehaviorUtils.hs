@@ -53,10 +53,9 @@ inAgentType agentType env agent =
 holededByRobot env agent =
     let
         agentId = getAgentId agent
-        pos = getAgentPos agent
         agents = getEnvAgents env
-        samePositionRobots = getSamePositionAndAgentType pos Robot agents
-        robotStates = map getAgentState samePositionRobots
+        allRobots = getEnvAgentTypeAgents env Robot 
+        robotStates = map getAgentState allRobots
     in
         any (\state ->
                 case state of

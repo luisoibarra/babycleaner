@@ -43,7 +43,7 @@ applyDoNothingActionToEnv env action = env
 
 applyMoveActionToEnv env action =
     let
-        agent = getAgentFromAction action
+        agent = getEnvAgentFromAction env action
         agentType = getAgentType agent
     in case agentType of
         Baby -> applyMoveBabyActionToEnv env action
@@ -52,7 +52,7 @@ applyMoveActionToEnv env action =
 
 applyCleanActionToEnv env action = 
     let
-        agent = getAgentFromAction action
+        agent = getEnvAgentFromAction env action
         agentType = getAgentType agent
     in case agentType of
         Robot -> applyCleanRobotActionToEnv env action
@@ -60,7 +60,7 @@ applyCleanActionToEnv env action =
 
 applyPickBabyActionToEnv env action =
     let
-        agent = getAgentFromAction action
+        agent = getEnvAgentFromAction env action
         agentType = getAgentType agent
     in case agentType of
         Robot -> applyPickBabyRobotActionToEnv env action
@@ -69,7 +69,7 @@ applyPickBabyActionToEnv env action =
 
 applyLeaveBabyActionToEnv env action = 
     let
-        agent = getAgentFromAction action
+        agent = getEnvAgentFromAction env action
         agentType = getAgentType agent
     in case agentType of
         Robot -> applyLeaveBabyRobotActionToEnv env action
@@ -77,7 +77,7 @@ applyLeaveBabyActionToEnv env action =
 
 applyCreateDirtActionToEnv env action = 
     let
-        agent = getAgentFromAction action
+        agent = getEnvAgentFromAction env action
         agentType = getAgentType agent
     in case agentType of
         Baby -> applyCreateDirtBabyActionToEnv env action

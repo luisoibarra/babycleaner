@@ -31,6 +31,15 @@ instance Show (Env s) where {
 getEnvTurn env = let Env { currentTurn = turn } = env in turn
 getEnvAgents env = let Env { agents = agents } = env in agents
 getEnvGen env = let Env { randGen = gen } = env in gen
+getEnvAgentId env id =
+    let
+        agentWithId = filter (\x -> id == getAgentId x) $ getEnvAgents env
+    in  if null agentWithId then
+            error "Invalid agent id. Environment doesn't contain any agent with specified id"
+        else if length agentWithId >= 2 then
+            error "Multiple agents with the same Id"
+        else
+            head agentWithId
 
 isValidEnv env =
     let
@@ -245,3 +254,17 @@ addNewAgentToEnv env newAgent = let
 
 addNewAgentsToEnv :: Foldable t => Env s -> t Agent -> Env s
 addNewAgentsToEnv = foldl addNewAgentToEnv
+
+
+getEnvAgentFromAction env action =
+    let 
+        oldActionAgent = getAgentFromAction action
+        agent = getEnvAgentId env $ getAgentId oldActionAgent
+    in 
+        agent
+
+getEnvAgentTypeAgents env agentType = 
+    let
+        allAgents = getEnvAgents env
+    in
+        filter (\a -> getAgentType a == agentType) allAgents

@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use tuple-section" #-}
 module Utils where
+import Debug.Trace (trace)
 
 
 moveDirs = [(0,1),(1,0),(-1,0),(0,-1)]
@@ -47,4 +48,3 @@ innerBfs currentNodeTuple unseenNodes enqueuedNodes visitedNodes = let
         else
             innerBfs (head newQueue) newUnseenNodes (tail newQueue) newVisitedNodes
 
-        

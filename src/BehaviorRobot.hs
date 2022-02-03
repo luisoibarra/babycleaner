@@ -18,6 +18,7 @@ robotBrookBehavior = [
 
     
     -- BASIC LOGIC
+
     -- Holding a baby
     (\env agent -> isHoldingSomething agent, takeBabyToPlaypen),
     -- Not holding something
@@ -26,7 +27,6 @@ robotBrookBehavior = [
     -- Not holding something, no Free babies
     -- Dirty environment
     (\env agent -> isEnvDirty env, cleanDirt),
-
     -- Not holding something, no Free babies, no dirty cells
     (\env agent -> True, \env agent -> (env, [DoNothing {agent=agent}]))
     ]
@@ -113,14 +113,9 @@ cleanDirt env agent
             (env,
             if pathLength == 0 then
                 [
-                    DoNothing {agent=agent}
-                ]
-            else if pathLength == 1 then
-                [
-                    Move {agent=agent, destination=path !! 0},
                     Clean {agent=agent}
                 ]
-            else if pathLength >= 2 then
+            else if pathLength >= 1 then
                 [
                     Move {agent=agent, destination=path !! 0}
                 ]
@@ -146,7 +141,7 @@ applyMoveRobotActionToEnv env action =
 
 applyCleanRobotActionToEnv env action =
     let
-        agent = getAgentFromAction action
+        agent = getEnvAgentFromAction env action
         pos = getAgentPos agent
         agents = getEnvAgents env
         dirt = getSamePositionAndAgentType pos Dirt agents
@@ -155,7 +150,7 @@ applyCleanRobotActionToEnv env action =
 
 applyPickBabyRobotActionToEnv env action =
     let
-        agent = getAgentFromAction action
+        agent = getEnvAgentFromAction env action
         pos = getAgentPos agent
         agents = getEnvAgents env
         babies = getSamePositionAndAgentType pos Baby agents
@@ -167,7 +162,7 @@ applyPickBabyRobotActionToEnv env action =
 
 applyLeaveBabyRobotActionToEnv env action =
     let
-        agent = getAgentFromAction action
+        agent = getEnvAgentFromAction env action
         pos = getAgentPos agent
         agents = getEnvAgents env
         babies = getSamePositionAndAgentType pos Baby agents

@@ -22,7 +22,7 @@ instance Show Agent where {
       Robot -> "R" ++ if isHoldingSomething a then "*" else ""
 }
 
-data Action s =
+data Action =
     DoNothing {
         agent :: Agent
     } |
@@ -41,7 +41,7 @@ data Action s =
     } |
     CreateDirt {
         agent :: Agent
-    }
+    } deriving (Show)
 
 data AgentState =
     EmptyState |

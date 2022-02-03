@@ -173,20 +173,18 @@ El problema de entregarle tareas a los agentes se abordó usando la propuesta de
 
 El objetivo del los roboces es mantener el agente ambiente limpio a un 60%. La estrategia que se realiza está encaminada a limpiar completamente la casa, la cual, si se logra se estaría cumpliendo la tarea inicial.
 
-Gracias a la Arquitectura de Brooks, es sencillo expresar comportamientos complejos mediante la interacción de varios componentes simples. Para la estrategia de los roboces se usaron dos estrategias:
+Características no descritas en el problema inicial necesarias de esclarecer. Se asume que:
 
-- Estrategia básica:
-  - Ideas:
-    - Los bebés son los causantes de la suciedad, por lo tanto es prioridad para el objetivo del agente tener a los bebés en un estado en el cual no puedan causar suciedad
-  - Comportamiento:
-    1. Si se tiene cargado a un bebé llevarlo al corral
-    2. Si hay bebés sueltos buscar al bebé y cargarlo
-    3. Si hay suciedad buscar la suciedad y limpiar
-  - Problemas:
-    TODO
+- Los robots no pueden limpiar mientras cargan un niño.
 
-- Estrategia avanzada:
-  - Ideas:
+Gracias a la Arquitectura de Brooks, es sencillo expresar comportamientos complejos mediante la interacción de varios componentes simples. Estrategia:
+
+- Ideas:
+  - Los bebés son los causantes de la suciedad, por lo tanto es prioridad para el objetivo del agente tener a los bebés en un estado en el cual no puedan causar suciedad
+- Comportamiento:
+  1. Si se tiene cargado a un bebé llevarlo al corral
+  2. Si hay bebés sueltos buscar al bebé y cargarlo
+  3. Si hay suciedad buscar la suciedad y limpiar
 
 ## Implementación Haskell
 

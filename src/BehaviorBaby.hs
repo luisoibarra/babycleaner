@@ -48,7 +48,7 @@ getMaxDirtAmount babiesAmount
 
 applyCreateDirtBabyActionToEnv env action = 
     let
-        agent = getAgentFromAction action
+        agent = getEnvAgentFromAction env action
         pos = getAgentPos agent
         Env {
             height=_height, 
