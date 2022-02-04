@@ -4,6 +4,7 @@ import Utils
 import System.Random
 import Text.Printf
 import RandomUtils
+import Debug.Trace
 
 data Env s = Env {
     height :: Int,
@@ -33,9 +34,13 @@ getEnvAgents env = let Env { agents = agents } = env in agents
 getEnvGen env = let Env { randGen = gen } = env in gen
 getEnvAgentId env id =
     let
-        agentWithId = filter (\x -> id == getAgentId x) $ getEnvAgents env
+        agents = getEnvAgents env
+        agentWithId = filter (\x -> id == getAgentId x) agents
     in  if null agentWithId then
-            error "Invalid agent id. Environment doesn't contain any agent with specified id"
+            let
+                invalidId = trace (concat ["Invalid id:", show id, "Possibles:", show $ map getAgentId agents]) id
+            in
+                error $ show invalidId ++ "Invalid agent id. Environment doesn't contain any agent with specified id"
         else if length agentWithId >= 2 then
             error "Multiple agents with the same Id"
         else
@@ -257,13 +262,13 @@ addNewAgentsToEnv = foldl addNewAgentToEnv
 
 
 getEnvAgentFromAction env action =
-    let 
+    let
         oldActionAgent = getAgentFromAction action
         agent = getEnvAgentId env $ getAgentId oldActionAgent
-    in 
+    in
         agent
 
-getEnvAgentTypeAgents env agentType = 
+getEnvAgentTypeAgents env agentType =
     let
         allAgents = getEnvAgents env
     in

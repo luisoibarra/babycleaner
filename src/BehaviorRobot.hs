@@ -20,7 +20,7 @@ robotBrookBehavior = [
     -- BASIC LOGIC
 
     -- Holding a baby
-    (\env agent -> isHoldingSomething agent, takeBabyToPlaypen),
+    (\env agent -> isHoldingSomething (getEnvAgentId env $ getAgentId agent), takeBabyToPlaypen),
     -- Not holding something
     -- Free babies
     (\env agent -> (not . null) (babiesFree env) , searchBaby),
@@ -28,7 +28,7 @@ robotBrookBehavior = [
     -- Dirty environment
     (\env agent -> isEnvDirty env, cleanDirt),
     -- Not holding something, no Free babies, no dirty cells
-    (\env agent -> True, \env agent -> (env, [DoNothing {agent=agent}]))
+    (\env agent -> True, \env agent -> (env, []))
     ]
 
 -- Get Actions --
@@ -57,9 +57,7 @@ takeBabyToPlaypen env agent
         in
             (env,
             if pathLength == 0 then
-                [
-                    DoNothing {agent=agent}
-                ]
+                []
             else if pathLength == 1 then
                 [
                     Move {agent=agent, destination=path !! 0},
@@ -80,7 +78,7 @@ takeBabyToPlaypen env agent
 
 -- Assumes that agent is not holding a baby and that there are free babies
 searchBaby env agent 
-    | inBaby env agent = (env, [PickBaby {agent=agent}])
+    | any (\b -> getAgentPos agent == getAgentPos b) $ babiesFree env = (env, [PickBaby {agent=agent}])
     | otherwise =
         let
             path = goToNearest isFreeBaby env agent
@@ -88,9 +86,7 @@ searchBaby env agent
         in
             (env,
             if pathLength == 0 then
-                [
-                    DoNothing {agent=agent}
-                ]
+                []
             else if pathLength == 1 then
                 [
                     Move {agent=agent, destination=path !! 0},

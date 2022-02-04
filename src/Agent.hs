@@ -23,9 +23,6 @@ instance Show Agent where {
 }
 
 data Action =
-    DoNothing {
-        agent :: Agent
-    } |
     Move {
         agent :: Agent,
         destination :: (Int, Int)
@@ -65,7 +62,6 @@ getHoldingIds agentState =
         EmptyState -> []
         RobotState {holdingAgents=_holdingAgents} -> _holdingAgents
 
-getAgentFromAction DoNothing {agent = _agent} = _agent
 getAgentFromAction Move {agent = _agent} = _agent
 getAgentFromAction Clean {agent = _agent} = _agent
 getAgentFromAction PickBaby {agent = _agent} = _agent

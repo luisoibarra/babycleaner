@@ -7,22 +7,29 @@ import BehaviorBaby
 import BehaviorRobot
 import Data.List (sortOn, delete)
 import RandomUtils
+import Debug.Trace
 
 -- GET AGENT ACTIONS --
 
-getAgentActions env agent =
+getAgentActions env agentId =
     let
+        -- agent = getEnvAgentId env agentId
+        agents = filter (\a -> getAgentId a == agentId) $ getEnvAgents env
+        agent = head agents
         currentType = getAgentType agent
-    in case currentType of
-        Obstacle -> getDoNothingAction env agent
-        Playpen  -> getDoNothingAction env agent
-        Dirt -> getDoNothingAction env agent
-        Baby -> getBabyAction env agent
-        Robot -> getRobotAction env agent
+    in if (not . null) agents then
+        case currentType of
+            Obstacle -> getDoNothingAction env agent
+            Playpen  -> getDoNothingAction env agent
+            Dirt -> getDoNothingAction env agent
+            Baby -> getBabyAction env agent
+            Robot -> getRobotAction env agent
+       else
+           (env, [])
 
 -- AGENT TYPE GET ACTIONS --
 
-getDoNothingAction env agent = (env, [DoNothing agent])
+getDoNothingAction env agent = (env, [])
 
 getRobotAction = brookAgent robotBrookBehavior 
 
@@ -32,7 +39,6 @@ getBabyAction = brookAgent babyBrookBehavior
 
 getEnvFromAction env action =
     case action of
-        DoNothing {} -> applyDoNothingActionToEnv env action
         Move {} -> applyMoveActionToEnv env action
         Clean {} -> applyCleanActionToEnv env action
         PickBaby {} -> applyPickBabyActionToEnv env action

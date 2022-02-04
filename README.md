@@ -138,7 +138,7 @@ Todas las acciones comparten que tienen como propiedad el agente que las quiere 
 
 **Estructura** (Además del agente):
 
-- DoNothing, Clean, PickBaby, LeaveBaby, CreateDirt: No tienen otro estado adicional
+- Clean, PickBaby, LeaveBaby, CreateDirt: No tienen otro estado adicional
 - Move:
   - destination: Destino a donde se desea mover el agente.
 
@@ -199,11 +199,12 @@ Entre las funciones principales a tener en cuenta, se encuentran:
 - agentBfs (BehaviorUtils.hs): Función muy utilizada en la definición de los comportamientos que te permite obtener una lista de los agentes alcanzables por un agente y el camino encontrado por BFS hacia este.
 
 ## Resultados
-TODO
+
+Dada la estrategia el ambiente se logra limpiar eventualmente la mayoría de los casos, a no ser que ocurra que algún obstáculo bloquee alguna suciedad. En este caso el comportamiento no satisface que se puedan limpiar las casillas inaccesibles, incluso, puede que no haya manera de limpiarlas.
+
+El papel de la longitud del cambio natural toma un rol importante ya que si es muy corto los robots no tendrán tiempo de limpiar y guardar a los niños. Además la saturación de niños influye en la cantidad de suciedad en el ambiente pero mientras más sucio menos movimiento tiene el niño, por lo que se le hace al robot más fácil atraparlo.
 
 ## TODOs
 
 - Make current TODOs
-- Add initialRandom Env generator
-- Add Testings
 - Propose two behavior models

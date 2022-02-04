@@ -12,7 +12,7 @@ import Data.List
 
 -- Initial Configuration --
 
-maxTurn = 10
+maxTurn = 15
 randomSeed = 10
 initialBabiesPlaypens = 2
 initialRobots = 2
@@ -20,7 +20,7 @@ initialObstacles = 3
 initialDirt = 0
 defaultHeight = 6
 defaultWidth = 6
-defaultShuffleTurn = 10
+defaultShuffleTurn = 20
 
 -- Simulation's initial state
 -- initialGen = initRandomGen randomSeed
@@ -78,7 +78,7 @@ interactAllAgent env agents =
         foldl (
         \currentEnv agent -> 
             let 
-                (afterEnv, actions) = getAgentActions currentEnv agent 
+                (afterEnv, actions) = getAgentActions currentEnv $ getAgentId agent 
             in 
                 foldl getEnvFromAction afterEnv actions) env orderedAgents 
 

@@ -15,14 +15,17 @@ returning a tuple of the env and the actions to perform.
 The only changes in the environment should be in the randomGenerator. Any other changes should be 
 reflected in the action list
 -}
-brookAgent beh env agent = foldl
-    (\(accEnv, actions) (pred, actionFun) ->
-        if null actions then
-            if pred env agent then
-                actionFun env agent
-            else (accEnv, [])
-        else (accEnv, actions)) (env, []) beh
-
+brookAgent :: [(Env s1 -> Agent -> Bool, Env s1 -> Agent -> (Env s1, [Action]))] -> Env s1 -> Agent -> (Env s1, [Action])
+brookAgent beh env agent = 
+    let (newEnv, actions, _) = foldl
+            (\(accEnv, actions, anyTrue) (pred, actionFun) ->
+                if not anyTrue then
+                    if pred env agent then
+                        let (newCurrEnv, newActions) = actionFun env agent in (newCurrEnv, newActions, True)
+                    else (accEnv, [], False)
+                else (accEnv, actions, True)) (env, [], False) beh
+    in
+        (newEnv, actions)
 -- UTILS -- 
 
 
@@ -45,7 +48,7 @@ getSamePositionAndAgentType (x,y) agentType agents =
 -- If agent is in the same position of an agentType agent
 inAgentType agentType env agent =
     let
-        position = getAgentPos agent
+        position = (getAgentPos . getEnvAgentId env . getAgentId) agent
         agents = getEnvAgents env
     in
         not (null (getSamePositionAndAgentType position agentType agents))

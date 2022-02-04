@@ -8,8 +8,8 @@ import Agent
 
 babyBrookBehavior = [
         -- DoNothing When? -> In Playpen | When been holded by a Robot
-        (inPlaypen, \env agent -> (env, [DoNothing {agent = agent}])),
-        (holededByRobot, \env agent -> (env, [DoNothing {agent = agent}])),
+        (inPlaypen, \env agent -> (env, [])),
+        (holededByRobot, \env agent -> (env, [])),
         (\env agent -> True, getMoveBabyActions)
     ]
 
@@ -17,12 +17,12 @@ babyBrookBehavior = [
 
 getMoveBabyActions env agent =
     let
-        position = getAgentPos agent
+        position =  (getAgentPos . getEnvAgentId env . getAgentId) agent
         -- Can move only if it is empty or there are only obstacles
         possibleMovePositions = getAllMoveablePositions env (isAllAgentType [Obstacle]) agent position
         (movePos, nextRandEnv) = pickRandomFromListEnv env possibleMovePositions
     in  if null possibleMovePositions then
-            (env, [DoNothing {agent=agent}, CreateDirt {agent = agent}])
+            (env, [CreateDirt {agent = agent}])
         else
             (nextRandEnv, [Move {agent = agent, destination = movePos}, CreateDirt {agent = agent}])
 
@@ -30,9 +30,11 @@ getMoveBabyActions env agent =
 
 applyMoveBabyActionToEnv env action =
     let
-        Move {agent=agent, destination=movePos} = action
-    in  
-        snd $ moveObstacleRecursive env agent movePos
+        agent = getEnvAgentFromAction env action
+        Move {destination=movePos} = action
+        next = snd $ moveObstacleRecursive env agent movePos
+    in
+        next
 
 -- Appear dirt probability
 dirtCreationProb = 0.25
@@ -46,17 +48,17 @@ getMaxDirtAmount babiesAmount
     | otherwise = error "Invalid babiesAmount range"
 
 
-applyCreateDirtBabyActionToEnv env action = 
+applyCreateDirtBabyActionToEnv env action =
     let
         agent = getEnvAgentFromAction env action
         pos = getAgentPos agent
         Env {
-            height=_height, 
-            width=_width, 
-            randGen=_randGen, 
-            currentTurn=_currentTurn, 
-            shuffleTurnAmount=_shuffleTurnAmount, 
-            currentIdPointer=_currentIdPointer, 
+            height=_height,
+            width=_width,
+            randGen=_randGen,
+            currentTurn=_currentTurn,
+            shuffleTurnAmount=_shuffleTurnAmount,
+            currentIdPointer=_currentIdPointer,
             agents=_agents
         } = env
         gridValidPositions = gridNeighborsPositions _height _width pos
@@ -66,22 +68,22 @@ applyCreateDirtBabyActionToEnv env action =
         emptyPositions = [p | p <- gridValidPositions, null $ getEnvPositionAgent env p]
         (dirtPositions, dirtRandGen) = addDirtToPositions _randGen emptyPositions maxDirtAmount dirtCreationProb
         initialEnv = Env {
-                height=_height, 
-                width=_width, 
-                randGen=dirtRandGen, 
-                currentTurn=_currentTurn, 
-                shuffleTurnAmount=_shuffleTurnAmount, 
-                currentIdPointer=_currentIdPointer, 
+                height=_height,
+                width=_width,
+                randGen=dirtRandGen,
+                currentTurn=_currentTurn,
+                shuffleTurnAmount=_shuffleTurnAmount,
+                currentIdPointer=_currentIdPointer,
                 agents=_agents
             }
     in
-        addNewAgentsToEnv initialEnv 
+        addNewAgentsToEnv initialEnv
             [
-                Agent { 
-                    agentType=Dirt, 
-                    posX=posX, 
-                    posY=posY, 
-                    agentId=0, 
-                    state=EmptyState } 
+                Agent {
+                    agentType=Dirt,
+                    posX=posX,
+                    posY=posY,
+                    agentId=0,
+                    state=EmptyState }
                     | (posX, posY) <- dirtPositions
             ]
