@@ -159,17 +159,7 @@ La simulación se puede ver como un ciclo en el cual se va actualizando el ambie
     - En caso de que no le toque el cambio aleatorio, devuelve el mismo ambiente.
     - El cambio aleatorio consiste en un reordenamiento de todos los elementos del ambiente, así como un reseteo del estado de estos.
 
-### Arquitectura de agente
-
-![Agentes puramente reactivos](images/agentes_puramente_reactivos.png)
-
-Los agentes se modelaron como agente puramente reactivos con estados. La función *see*, se considera innecesaria ya que las percepciones del agente del ambiente es el mismo ambiente, la función de los agentes se observan en *AgentEnv.hs* en la sección **AGENT TYPE GET ACTIONS**, la cual encapsula las funciones *next* y *action* de la arquitectura propuesta.  
-
-**Entrega de tareas**:
-
-Para la entrega de tareas se abordaron dos opciones, usar una función de utilidad para evaluar el ambiente si el agente realizaba ciertas acciones y elegir entre ellas el mejor, o usar la propuesta de Arquitectura de Brook para este objetivo. La primera opción se vio más compleja de implementar e ineficiente, ya que requiere realizar muchas búsquedas sobre los posibles movimientos del agente y el estado en el que deja el ambiente y también realizar una función que puede ser relativamente compleja para la evaluación.
-
-El problema de entregarle tareas a los agentes se implementó finalmente usando la propuesta de la Arquitectura de Brooks, en la cual se definió un comportamiento para cada agente mediante una lista de tuplas de predicados y función de acción, en la cual el primero predicado que se cumplía realizaba su acción correspondiente sobre el sistema, cumpliendo así la relación binaria de inhibición mencionada en la arquitectura (Ver archivos con el prefijo *Behavior*).
+### Arquitectura
 
 **Estrategias**:
 
@@ -179,7 +169,7 @@ Características no descritas en el problema inicial necesarias de esclarecer. S
 
 - Los robots no pueden limpiar mientras cargan un niño.
 
-Gracias a la Arquitectura de Brooks, es sencillo expresar comportamientos complejos mediante la interacción de varios componentes simples. Estrategia:
+Estrategia:
 
 - Ideas:
   - Los bebés son los causantes de la suciedad, por lo tanto es prioridad para el objetivo del agente tener a los bebés en un estado en el cual no puedan causar suciedad
@@ -189,6 +179,26 @@ Gracias a la Arquitectura de Brooks, es sencillo expresar comportamientos comple
   3. Si hay suciedad buscar la suciedad y limpiar
 
 ![Estrategia básica](images/estrategia_basica.png)
+
+Esta estrategia se tratará de implementar usando dos distintos tipos de arquitecturas estudiadas.
+
+#### Arquitectura de Brook
+
+![Agentes puramente reactivos](images/agentes_puramente_reactivos.png)
+
+Los agentes se modelaron como agente puramente reactivos con estados. La función *see*, se considera innecesaria ya que las percepciones del agente del ambiente es el mismo ambiente, la función de los agentes se observan en *AgentEnv.hs* en la sección **AGENT TYPE GET ACTIONS**, la cual encapsula las funciones *next* y *action* de la arquitectura propuesta.  
+
+**Entrega de tareas**:
+
+Para la entrega de tareas se abordaron dos opciones, usar una función de utilidad para evaluar el ambiente si el agente realizaba ciertas acciones y elegir entre ellas el mejor, o usar la propuesta de Arquitectura de Brook para este objetivo. La primera opción se vio más compleja de implementar e ineficiente, ya que requiere realizar muchas búsquedas sobre los posibles movimientos del agente y el estado en el que deja el ambiente y también realizar una función que puede ser relativamente compleja para la evaluación.
+
+El problema de entregarle tareas a los agentes se implementó finalmente usando la propuesta de la Arquitectura de Brooks, en la cual se definió un comportamiento para cada agente mediante una lista de tuplas de predicados y función de acción, en la cual el primero predicado que se cumplía realizaba su acción correspondiente sobre el sistema, cumpliendo así la relación binaria de inhibición mencionada en la arquitectura (Ver *BrookBehaviorUtils.hs*).
+
+#### Arquitectura Horizontal por Capas
+
+![Capa horizontal](images/capa_horizontal.png)
+
+Para esta arquitectura se usó una sola capa horizontal y una función mediadora. La capa horizontal posee todas las acciones que puede realizar el agente, luego este conjunto de posibles acciones se le pasa a la función mediadora para que esta elija las acciones finales que ejecutará el agente (Ver *LayerBehaviorUtils.hs*).
 
 ## Implementación Haskell
 
@@ -210,12 +220,17 @@ El proyecto se estructuró en diferentes módulos de acuerdo a las diferentes re
 - AgentEnv.hs:
   - Define las funciones de intercción del ambiente con los agente y las acciones
   - Define la lógica del cambio aleatorio del ambiente
-- BehaviorUtils.hs:
+- BrookBehaviorUtils.hs:
   - Define la función de selección de comportamiento de la Arquitectura de Brook
+- BehaviorUtils.hs:
   - Define funciones de utilidad para la aplicación de las acciones sobre el ambiente
-- BehaviorRobot/BehaviorBaby.hs:
+- BrookBehaviorRobot/BehaviorBaby.hs:
   - Define el comportamiento del agente respectivo mediante una lista de tuplas de predicados contra función que devuelve las acciones a realizar el agente.
   - Define funciones auxiliares para los predicados y las funciones que devuelven las acciones de los respectivos agentes.
+- LayerBehaviorUtils.hs:
+  - Define la función de selección de comportamiento de la Arquitectura Horizontal de una Capa
+- LayerBehaviorRobot:
+  - Define el comportamiento del robot mediante la arquitectura de capas.
 - InitialStates.hs:
   - Define algunos estados iniciales de la simulación.
   - Define la lógica para crear ambientes aleatoriamente.
@@ -230,17 +245,14 @@ Entre las funciones principales a tener en cuenta, se encuentran:
 
 - interactAllAgent (AgentEnv.hs): Encargada de devolver el ambiente luego de la interacción de los agentes con él. Hace el equivalente de un doble *for* en los lenguajes imperativos auxiliándose de la función **foldl**.
 
-- brookAgent (BehaviorUtils.hs): Encargada de definir el comportamiento de un agente dado una lista de tuplas de predicado y función que devuelve acciones a realizar por el agente que funciona como el comportamiento de este. Su modo de uso es definirla parcialmente con el comportamiento que se desee. Ver AgentEnv.hs sección **AGENT TYPE GET ACTIONS**.
+- brookAgent (BrookBehaviorUtils.hs): Encargada de definir el comportamiento de un agente dado una lista de tuplas de predicado y función que devuelve acciones a realizar por el agente que funciona como el comportamiento de este. Su modo de uso es definirla parcialmente con el comportamiento que se desee. Ver AgentEnv.hs sección **AGENT TYPE GET ACTIONS**.
+
+- horizontalLayeredAgent (LayerBehaviorUtils.hs): Encargada de definir el comportamiento de un agente mediante la arquitectura de capa horizontal. Toma una lista de función generadora de acciones y una función seleccionadora de acciones encargada de seleccionar la acción final, además del ambiente y el agente y finalmente devuelve las acciones a realizar por el agente. Su modo de uso es definirla parcialmente con el comportamiento que se desee. Ver AgentEnv.hs sección **AGENT TYPE GET ACTIONS**.
 
 ## Resultados
 
+Según las dos arquitecturas propuestas y la estategia pensada la Arquitectura de Brook resultó ser la más fácil de implementar, además de ser más legible. Esta se desempeña de mejor manera que la implementación hecha para la Arquitectura de Capa Horizontal, ya que debido a la naturaleza de la estrategia esta última arquitectura tiene dificultad a la hora crear una función de selección que pueda seguir la estrategia señalada y por lo tanto en varios casos no toma una decisión buena. La implementación de un comportamiento aleatorio en ambas arquitecturas es relativamente sencillo.
+
 Dada la estrategia el ambiente se logra limpiar eventualmente la mayoría de los casos, a no ser que ocurra que algún obstáculo bloquee alguna suciedad. En este caso el comportamiento no satisface que se puedan limpiar las casillas inaccesibles, incluso, puede que no haya manera de limpiarlas.
 
-El papel de la longitud del cambio natural toma un rol importante ya que si es muy corto los robots no tendrán tiempo de limpiar y guardar a los niños. Además la saturación de niños influye en la cantidad de suciedad en el ambiente pero mientras más sucio menos movimiento tiene el niño, por lo que se le hace al robot más fácil atraparlo.
-
-## TODOs
-
-- Propose two behavior models. RANDOM BEHAVIOR
-- Layered Architecture
-- Fix assumtions in robot behavioral functions
-- Add to model all this
+El papel de la longitud del cambio natural toma un rol importante ya que si es muy corto los robots no tendrán tiempo de guardar a los niños y limpiar. También la saturación de niños influye en la cantidad de suciedad en el ambiente pero mientras más sucio menos movimiento tiene el niño, por lo que se le hace al robot más fácil atraparlo.

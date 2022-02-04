@@ -28,8 +28,9 @@ library
       Agent
       AgentEnv
       BehaviorBaby
-      BehaviorRobot
       BehaviorUtils
+      BrookBehaviorRobot
+      BrookBehaviorUtils
       Environment
       InitialStates
       LayerBehaviorRobot

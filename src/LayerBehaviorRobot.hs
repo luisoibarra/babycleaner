@@ -1,11 +1,12 @@
 module LayerBehaviorRobot where
 
-import BehaviorRobot
+import BrookBehaviorRobot
 import Data.List
 import BehaviorUtils
 import Environment
 import Agent
 import Debug.Trace
+import RandomUtils
 
 
 robotLayerBehavior = [
@@ -15,20 +16,37 @@ robotLayerBehavior = [
         -- getDoNothingAction
     ]
 
-layerSelectFunctionRobot :: [(Env s, Agent, b)] -> (Env s, b)
+randomLayerSelectFunctionRobot possibleActions =
+    let 
+        (currEnv, _, _) = head possibleActions 
+        ((_, _, actions), nextEnv) = pickRandomFromListEnv currEnv possibleActions  
+    in
+        (nextEnv, actions)
+
+layerSelectFunctionRobot :: [(Env s1, Agent, [Action])] -> (Env s1, [Action])
 layerSelectFunctionRobot possibleActions =
     let
         -- possibleActions = trace (show $ map snd _possibleActions) _possibleActions
         (env, agent, actions) = head $ sortOn getRobotBehPriority possibleActions
     in
         -- trace (show (env, actions)) (env, actions)
-        (env, actions) 
+        (env, actions)
 
+getRobotBehPriority :: (Env s1, Agent, [Action]) -> Int
 getRobotBehPriority (env, agent, actions)
-    | trace ("Holding" ++ show (isCurrentlyHoldingBaby env agent)) isCurrentlyHoldingBaby env agent = 0
-    | trace ("Free Babies" ++ show (existFreeBabies env agent)) existFreeBabies env agent = 1
-    | trace ("Env Dirty" ++ show (isEnvDirty env agent)) isEnvDirty env agent = 2
-    | isCurrentlyHoldingBaby env agent = 0
-    | existFreeBabies env agent = 1
-    | isEnvDirty env agent = 2
+    | isCurrentlyHoldingBaby env agent && all 
+        (\a -> case a of 
+                Move {} -> True 
+                LeaveBaby {} -> True
+                _ -> False) actions = 0
+    | existFreeBabies env agent && all 
+        (\a -> case a of 
+                Move {} -> True 
+                PickBaby {} -> True
+                _ -> False) actions = 1
+    | isEnvDirty env agent && all 
+        (\a -> case a of 
+                Move {} -> True 
+                Clean {} -> True
+                _ -> False) actions = 2
     | otherwise = 3

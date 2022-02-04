@@ -4,10 +4,13 @@ import Agent
 import Environment
 import BehaviorUtils
 import BehaviorBaby
-import BehaviorRobot
+import BrookBehaviorRobot
 import Data.List (sortOn, delete)
 import RandomUtils
 import Debug.Trace
+import LayerBehaviorRobot
+import LayerBehaviorUtils
+import BrookBehaviorUtils
 
 
 {-
@@ -58,7 +61,13 @@ getAgentActions env agentId =
 
 getDoNothingAction env agent = (env, [])
 
-getRobotAction = brookAgent robotBrookBehavior 
+-- Comment/Uncomment for the desired behavior
+
+getRobotAction = brookAgent robotBrookBehavior -- BROOK 
+-- getRobotAction = brookAgent robotRandomBrookBehavior -- RANDOM BROOK 
+
+-- getRobotAction = horizontalLayeredAgent robotLayerBehavior layerSelectFunctionRobot -- HORIZONTAL LAYER
+-- getRobotAction = horizontalLayeredAgent robotLayerBehavior randomLayerSelectFunctionRobot -- RANDOM HORIZONTAL LAYER
 
 getBabyAction = brookAgent babyBrookBehavior
 

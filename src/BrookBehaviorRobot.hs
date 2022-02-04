@@ -1,4 +1,4 @@
-module BehaviorRobot where
+module BrookBehaviorRobot where
 
 import Agent
 import BehaviorUtils
@@ -20,20 +20,31 @@ robotBrookBehavior = [
     -- BASIC LOGIC
 
     -- Holding a baby
-    (\env agent -> isHoldingSomething (getEnvAgentId env $ getAgentId agent), takeBabyToPlaypen),
+    (isCurrentlyHoldingBaby, takeBabyToPlaypen ),
     -- Not holding something
     -- Free babies
-    (\env agent -> (not . null) (babiesFree env) , searchBaby),
+    (existFreeBabies, searchBaby ),
     -- Not holding something, no Free babies
     -- Dirty environment
-    (\env agent -> isEnvDirty env, cleanDirt),
+    (isEnvDirty, cleanDirt ),
     -- Not holding something, no Free babies, no dirty cells
-    (\env agent -> True, \env agent -> (env, []))
+    (predTrue, \env agent -> (env, []))
+
+    ]
+
+robotRandomBrookBehavior = [
+    (predTrue, \env agent -> fst $ pickRandomFromListEnv env [takeBabyToPlaypen env agent, searchBaby env agent, cleanDirt env agent])
     ]
 
 -- Get Actions --
 
-isEnvDirty env = any (\x -> getAgentType x == Dirt) $ getEnvAgents env
+predTrue _ _ = True
+
+isCurrentlyHoldingBaby env agent = isHoldingSomething (getEnvAgentId env $ getAgentId agent) 
+
+existFreeBabies env agent = (not . null) (babiesFree env)
+
+isEnvDirty env _ = any (\x -> getAgentType x == Dirt) $ getEnvAgents env
 
 isEmptyPlaypen env agent = all (\x -> getAgentType x == Playpen) (getEnvPositionAgent env $ getAgentPos agent)
 
