@@ -159,9 +159,7 @@ La simulación se puede ver como un ciclo en el cual se va actualizando el ambie
     - En caso de que no le toque el cambio aleatorio, devuelve el mismo ambiente.
     - El cambio aleatorio consiste en un reordenamiento de todos los elementos del ambiente, así como un reseteo del estado de estos.
 
-### Arquitectura
-
-**Estrategias**:
+**Estrategia**:
 
 El objetivo del los robots es mantener el agente ambiente limpio a un 60%. La estrategia que se realiza está encaminada a limpiar completamente la casa, la cual, si se logra se estaría cumpliendo la tarea inicial.
 
@@ -180,15 +178,21 @@ Estrategia:
 
 ![Estrategia básica](images/estrategia_basica.png)
 
-Esta estrategia se tratará de implementar usando dos distintos tipos de arquitecturas estudiadas.
+**Comportamiento random**:
 
-#### Arquitectura de Brook
+Se realizó el comportamiento aleatorio del robot, de manera tal que elija entre una de las acciones en la estrategia inicial.
+
+Estas estrategias se implementaron usando dos distintos tipos de arquitecturas estudiadas.
+
+### Arquitectura
+
+#### Arquitectura de Agentes
 
 ![Agentes puramente reactivos](images/agentes_puramente_reactivos.png)
 
 Los agentes se modelaron como agente puramente reactivos con estados. La función *see*, se considera innecesaria ya que las percepciones del agente del ambiente es el mismo ambiente, la función de los agentes se observan en *AgentEnv.hs* en la sección **AGENT TYPE GET ACTIONS**, la cual encapsula las funciones *next* y *action* de la arquitectura propuesta.  
 
-**Entrega de tareas**:
+#### Arquitectura de Brook
 
 Para la entrega de tareas se abordaron dos opciones, usar una función de utilidad para evaluar el ambiente si el agente realizaba ciertas acciones y elegir entre ellas el mejor, o usar la propuesta de Arquitectura de Brook para este objetivo. La primera opción se vio más compleja de implementar e ineficiente, ya que requiere realizar muchas búsquedas sobre los posibles movimientos del agente y el estado en el que deja el ambiente y también realizar una función que puede ser relativamente compleja para la evaluación.
 
@@ -203,6 +207,10 @@ Para esta arquitectura se usó una sola capa horizontal y una función mediadora
 ## Implementación Haskell
 
 Para la implementación del modelo anterior en Haskell se crearon estructuras para conformar las definiciones de Environment, Agent, AgentType y Action. Sobre estas estructuras se implementaron diferentes funciones que las manipulaban hasta lograr el resultado deseado. En la mayoría de las funciones se pasa la instancia actualizada del ambiente para poder trabajar sobre este. Para la implementación de los randoms fue necesario modificar el ambiente en la sección se generación de acciones, en las cuales solo se modificó la propiedad del ambiente *randGen*, ya que en esta sección no se debe algún cambio relacionado con otra estructura del ambiente.
+
+Para cambiar el comportamiento de los robots ir a *AgentEnv.hs* en la sección **AGENT TYPE GET ACTIONS**.
+
+Para cambiar las características iniciales del ambiente ir a *Main.hs* en la sección **Initial Configuration**.
 
 ### Estructura del proyecto
 
