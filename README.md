@@ -2,6 +2,8 @@
 
 Luis Ernesto Ibarra Vázquez C411
 
+[Link al proyecto en Github](https://github.com/luisoibarra/babycleaner)
+
 ## Problema
 
 El ambiente en el cual intervienen los agentes es discreto y tiene la forma de
