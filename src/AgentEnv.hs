@@ -9,6 +9,33 @@ import Data.List (sortOn, delete)
 import RandomUtils
 import Debug.Trace
 
+
+{-
+All agents interact with the environment
+
+Python equivalent idea
+
+cenv = env
+for a in agents:
+    (afterEnv, actions) = getActions(cenv, a):
+    cenv = afterEnv
+    for a in actions:
+        cenv = modEnv(cenv, action)
+return cenv
+-}
+interactAllAgent env [] = env
+interactAllAgent env agents =
+    let 
+        -- First goes the Robots then Babies and so on
+        orderedAgents = sortOn (inverseOrderAgentType . getAgentType) agents
+    in
+        foldl (
+        \currentEnv agent -> 
+            let 
+                (afterEnv, actions) = getAgentActions currentEnv $ getAgentId agent 
+            in 
+                foldl getEnvFromAction afterEnv actions) env orderedAgents 
+
 -- GET AGENT ACTIONS --
 
 getAgentActions env agentId =

@@ -273,3 +273,18 @@ getEnvAgentTypeAgents env agentType =
         allAgents = getEnvAgents env
     in
         filter (\a -> getAgentType a == agentType) allAgents
+
+
+showBoard height width agents =
+    let
+        horizontalDelimiter = "  -" ++ concat (replicate height "----")
+        verticalDelimiter = "|"
+    in
+        "    " ++ concat [show i ++ "   " | i <- [0..width-1]] ++ "\n" ++
+        horizontalDelimiter ++ "\n" ++
+        -- Row
+        concat [
+            (show y ++ " " ++ verticalDelimiter ++ concat [showAgent x y agents ++ verticalDelimiter | x <- [0..width-1]])
+            ++ "\n"
+            ++ horizontalDelimiter ++ "\n"
+            | y <- [height-1,height-2..0]]

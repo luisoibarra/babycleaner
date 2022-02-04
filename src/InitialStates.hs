@@ -72,9 +72,9 @@ defaultAgents = [
         }
     ]
 
-buildEnv initialEnv agents = foldl addNewAgentToEnv initialEnv agents
+buildEnv = foldl addNewAgentToEnv
 
-initState0 initialGen = buildEnv (emptyDefaultEnv initialGen) defaultAgents 
+initState0 initialGen = buildEnv (emptyDefaultEnv initialGen) defaultAgents
 
 babyTestAgents = [
         Agent {
@@ -159,7 +159,7 @@ robotTestAgents = [
             posX = 0,
             posY = 4,
             agentType = Dirt,
-            state = EmptyState 
+            state = EmptyState
         },
         Agent {
             agentId = 0,
@@ -184,7 +184,7 @@ robotTestAgents = [
             posX = 3,
             posY = 2,
             agentType = Baby,
-            state = EmptyState 
+            state = EmptyState
         },
 
         Agent {
@@ -192,28 +192,28 @@ robotTestAgents = [
             posX = 3,
             posY = 1,
             agentType = Dirt,
-            state = EmptyState 
+            state = EmptyState
         },
         Agent {
             agentId = 0,
             posX = 3,
             posY = 3,
             agentType = Dirt,
-            state = EmptyState 
+            state = EmptyState
         },
         Agent {
             agentId = 0,
             posX = 4,
             posY = 2,
             agentType = Dirt,
-            state = EmptyState 
+            state = EmptyState
         },
         Agent {
             agentId = 0,
             posX = 2,
             posY = 2,
             agentType = Dirt,
-            state = EmptyState 
+            state = EmptyState
         },
         Agent {
             agentId = 1,
@@ -256,7 +256,7 @@ initStateRobotTest initialGen = buildEnv (emptyDefaultEnv initialGen) robotTestA
 
 
 getRandomInitialEnv babiesAmount robotsAmount dirtAmount obstacleAmount height width shuffleTurn seed =
-    let 
+    let
         randGen = mkStdGen seed
         babies = [getDefaultAgentFromAgentType Baby | _ <- [1..babiesAmount]]
         playpens = [getDefaultAgentFromAgentType Playpen | _ <- [1..babiesAmount]]

@@ -9,6 +9,7 @@ import Debug.Trace
 import InitialStates
 import BehaviorUtils
 import Data.List
+import AgentEnv
 
 -- Initial Configuration --
 
@@ -20,7 +21,7 @@ initialObstacles = 3
 initialDirt = 0
 defaultHeight = 6
 defaultWidth = 6
-defaultShuffleTurn = 20
+defaultShuffleTurn = 15
 
 -- Simulation's initial state
 -- initialGen = initRandomGen randomSeed
@@ -51,36 +52,10 @@ simulationLoop env = if getEnvTurn env >= maxTurn then env else
 
 doAgentInteraction env =
     let
-        Env {
-                agents=_agents
-            } = env
-        afterAgentsInteraction = interactAllAgent env _agents
+        agents = getEnvAgents env
+        afterAgentsInteraction = interactAllAgent env agents
     in
         afterAgentsInteraction
-
-{-
-All agents interact with the environment
-
-cenv = env
-for a in agents:
-    (afterEnv, actions) = getActions(cenv, a):
-    cenv = afterEnv
-    for a in actions:
-        cenv = modEnv(cenv, action)
-return cenv
--}
-interactAllAgent env [] = env
-interactAllAgent env agents =
-    let 
-        -- First goes the Robots then Babies and so on
-        orderedAgents = sortOn (inverseOrderAgentType . getAgentType) agents
-    in
-        foldl (
-        \currentEnv agent -> 
-            let 
-                (afterEnv, actions) = getAgentActions currentEnv $ getAgentId agent 
-            in 
-                foldl getEnvFromAction afterEnv actions) env orderedAgents 
 
 doEnvNaturalChange env =
     let

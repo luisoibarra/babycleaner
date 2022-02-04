@@ -124,7 +124,7 @@ Para simplificación del modelo se asume que todo lo que está en el ambiente es
 - agentId: Id del agente,
 - state: Estado en el que se encuentra el agente, puede ser:
   - EmptyState
-  - RobotState: Este estado es el usado por los roboces para conocer que agente se tiene cargado.
+  - RobotState: Este estado es el usado por los robots para conocer que agente se tiene cargado.
 
 **Interacción**:
 
@@ -136,7 +136,7 @@ La función **getAgentActions** es la encargada de dado un ambiente y un agente,
 
 Todas las acciones comparten que tienen como propiedad el agente que las quiere realizar. Además de información específica sobre la acción particular que se vaya a realizar
 
-**Estructura** (Además del agente):
+**Estructura** (Además de la propiedad *agente*):
 
 - Clean, PickBaby, LeaveBaby, CreateDirt: No tienen otro estado adicional
 - Move:
@@ -152,7 +152,7 @@ La simulación se puede ver como un ciclo en el cual se va actualizando el ambie
 
 1. Cambio de los agentes al ambiente
 
-    - Para preservar el orden estipulado en el problema, primero se realizan los cambios de los roboces y luego los cambios de los demás agentes que son considerados parte del ambiente.
+    - Para preservar el orden estipulado en el problema, primero se realizan los cambios de los robots y luego los cambios de los demás agentes que son considerados parte del ambiente.
 
 2. Cambio aleatorio del ambiente
 
@@ -167,11 +167,13 @@ Los agentes se modelaron como agente puramente reactivos con estados. La funció
 
 **Entrega de tareas**:
 
-El problema de entregarle tareas a los agentes se abordó usando la propuesta de la Arquitectura de Brooks, en la cual se definió un comportamiento para cada agente mediante una lista de tuplas de predicados y función de acción, en la cual el primero que se cumplía realizaba su acción correspondiente sobre el sistema, cumpliendo así la relación binaria de inhibición mencionada en la arquitectura. (Ver archivos con el prefijo *Behavior*)
+Para la entrega de tareas se abordaron dos opciones, usar una función de utilidad para evaluar el ambiente si el agente realizaba ciertas acciones y elegir entre ellas el mejor, o usar la propuesta de Arquitectura de Brook para este objetivo. La primera opción se vio más compleja de implementar e ineficiente, ya que requiere realizar muchas búsquedas sobre los posibles movimientos del agente y el estado en el que deja el ambiente y también realizar una función que puede ser relativamente compleja para la evaluación.
+
+El problema de entregarle tareas a los agentes se implementó finalmente usando la propuesta de la Arquitectura de Brooks, en la cual se definió un comportamiento para cada agente mediante una lista de tuplas de predicados y función de acción, en la cual el primero predicado que se cumplía realizaba su acción correspondiente sobre el sistema, cumpliendo así la relación binaria de inhibición mencionada en la arquitectura (Ver archivos con el prefijo *Behavior*).
 
 **Estrategias**:
 
-El objetivo del los roboces es mantener el agente ambiente limpio a un 60%. La estrategia que se realiza está encaminada a limpiar completamente la casa, la cual, si se logra se estaría cumpliendo la tarea inicial.
+El objetivo del los robots es mantener el agente ambiente limpio a un 60%. La estrategia que se realiza está encaminada a limpiar completamente la casa, la cual, si se logra se estaría cumpliendo la tarea inicial.
 
 Características no descritas en el problema inicial necesarias de esclarecer. Se asume que:
 
@@ -186,17 +188,49 @@ Gracias a la Arquitectura de Brooks, es sencillo expresar comportamientos comple
   2. Si hay bebés sueltos buscar al bebé y cargarlo
   3. Si hay suciedad buscar la suciedad y limpiar
 
+![Estrategia básica](images/estrategia_basica.png)
+
 ## Implementación Haskell
 
-Para la implementación del modelo anterior en Haskell se crearon estructuras para conformar las definiciones de Environment, Agent, AgentType y Action. Sobre estas estructuras se implementaron diferentes funciones que las manipulaban hasta lograr el resultado deseado.
+Para la implementación del modelo anterior en Haskell se crearon estructuras para conformar las definiciones de Environment, Agent, AgentType y Action. Sobre estas estructuras se implementaron diferentes funciones que las manipulaban hasta lograr el resultado deseado. En la mayoría de las funciones se pasa la instancia actualizada del ambiente para poder trabajar sobre este. Para la implementación de los randoms fue necesario modificar el ambiente en la sección se generación de acciones, en las cuales solo se modificó la propiedad del ambiente *randGen*, ya que en esta sección no se debe algún cambio relacionado con otra estructura del ambiente.
+
+### Estructura del proyecto
+
+El proyecto se estructuró en diferentes módulos de acuerdo a las diferentes responsibilidades de cada uno.
+
+- Main.hs:
+  - Define la configuración inicial de la simulación.
+  - Define la función de entrada y el ciclo principal de la aplicación.
+- Agents.hs:
+  - Define los tipos de datos relacionados con los agentes y las acciones que realizan estos.
+  - Define funciones auxiliares simples para el manejo de estos tipos de datos con mayor facilidad.
+- Environment.hs:
+  - Define el tipo de dato Environment.
+  - Define funciones auxiliares simples para el manejo de los ambientes y predicados sencillos que interacúan sobre estos.
+- AgentEnv.hs:
+  - Define las funciones de intercción del ambiente con los agente y las acciones
+  - Define la lógica del cambio aleatorio del ambiente
+- BehaviorUtils.hs:
+  - Define la función de selección de comportamiento de la Arquitectura de Brook
+  - Define funciones de utilidad para la aplicación de las acciones sobre el ambiente
+- BehaviorRobot/BehaviorBaby.hs:
+  - Define el comportamiento del agente respectivo mediante una lista de tuplas de predicados contra función que devuelve las acciones a realizar el agente.
+  - Define funciones auxiliares para los predicados y las funciones que devuelven las acciones de los respectivos agentes.
+- InitialStates.hs:
+  - Define algunos estados iniciales de la simulación.
+  - Define la lógica para crear ambientes aleatoriamente.
+- RandomUtils.hs:
+  - Lógica del uso de randoms.
+
+### Principales funciones
 
 Entre las funciones principales a tener en cuenta, se encuentran:
 
-- interactAllAgent (Main.hs): Encargada de devolver el ambiente luego de la interacción de los agentes con él. Hace el equivalente de un doble *for* en los lenguajes imperativos auxiliándose de la función **foldl**.
+- agentBfs (BehaviorUtils.hs): Función muy utilizada en la definición de los comportamientos que te permite obtener una lista de los agentes alcanzables por un agente y el camino encontrado por BFS hacia este.
+
+- interactAllAgent (AgentEnv.hs): Encargada de devolver el ambiente luego de la interacción de los agentes con él. Hace el equivalente de un doble *for* en los lenguajes imperativos auxiliándose de la función **foldl**.
 
 - brookAgent (BehaviorUtils.hs): Encargada de definir el comportamiento de un agente dado una lista de tuplas de predicado y función que devuelve acciones a realizar por el agente que funciona como el comportamiento de este. Su modo de uso es definirla parcialmente con el comportamiento que se desee. Ver AgentEnv.hs sección **AGENT TYPE GET ACTIONS**.
-
-- agentBfs (BehaviorUtils.hs): Función muy utilizada en la definición de los comportamientos que te permite obtener una lista de los agentes alcanzables por un agente y el camino encontrado por BFS hacia este.
 
 ## Resultados
 
@@ -206,5 +240,7 @@ El papel de la longitud del cambio natural toma un rol importante ya que si es m
 
 ## TODOs
 
-- Make current TODOs
-- Propose two behavior models
+- Propose two behavior models. RANDOM BEHAVIOR
+- Layered Architecture
+- Fix assumtions in robot behavioral functions
+- Add to model all this
