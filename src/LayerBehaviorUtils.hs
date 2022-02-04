@@ -1,3 +1,5 @@
+module LayerBehaviorUtils where
+
 import Environment
 import Agent
 
